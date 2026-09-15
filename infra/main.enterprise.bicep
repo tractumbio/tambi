@@ -189,6 +189,9 @@ resource backend 'Microsoft.App/containerApps@2024-03-01' = {
           { name: 'AZURE_OPENAI_EMBEDDINGS_ENDPOINT', value: openai.properties.endpoint }
           { name: 'AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT', value: 'text-embedding-3-small' }
           { name: 'ENVIRONMENT', value: 'production' }
+          // Frontend and backend are separate Container Apps (different origins), so the
+          // browser needs the frontend origin explicitly allowed (credentials rule out '*').
+          { name: 'CORS_ORIGINS', value: 'https://${frontend.properties.configuration.ingress.fqdn}' }
           { name: 'KEY_VAULT_URL', value: kv.properties.vaultUri }
           { name: 'AZURE_CLIENT_ID', value: identity.properties.clientId }
         ]
