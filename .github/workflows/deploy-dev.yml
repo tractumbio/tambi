@@ -1,0 +1,41 @@
+name: Deploy (dev)
+
+# Manual or on push to the deploy branch. Builds images in ACR and deploys to
+# Azure Container Apps. Configure repo secrets first (see docs/DEPLOYMENT.md):
+#   AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID  (OIDC federated creds)
+#   PG_ADMIN_PASSWORD, ANTHROPIC_API_KEY, OPENAI_API_KEY
+on:
+  workflow_dispatch:
+  push:
+    branches: [deploy-dev]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  RG: tambi-dev-rg
+  LOCATION: australiaeast
+  PREFIX: tambi-dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PG_ADMIN_PASSWORD: ${{ secrets.PG_ADMIN_PASSWORD }}
+        run: |
+          chmod +x scripts/deploy-dev.sh
+          RG="$RG" LOCATION="$LOCATION" PREFIX="$PREFIX" ./scripts/deploy-dev.sh

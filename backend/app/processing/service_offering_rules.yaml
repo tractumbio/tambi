@@ -1,0 +1,129 @@
+# Accenture-addressable service-offering classification (ported from the previous
+# analytics build_master.py, adapted to the OCDS feed).
+#
+# The original keyed off AusTender CSV columns `Category Type` (Goods/Services) and
+# `Category` (category text). The OCDS API gives neither — only a UNSPSC *code*, a
+# title and a description. So the port:
+#   - keeps the five service offerings and the description/supplier scoring verbatim
+#     (these are the richest, directly-portable signals);
+#   - re-expresses the "Goods hard physical Category" gate as a UNSPSC-segment gate
+#     plus the same physical/non-addressable keyword patterns over title+description.
+#
+# A contract is classified into the single highest-scoring offering. It is
+# Accenture-addressable when it clears `addressable_min_score` AND is not caught by a
+# hard exclusion (physical UNSPSC segment or non-addressable keyword) without a strong
+# digital/service rescue in the text.
+
+addressable_min_score: 9.0
+
+service_offerings:
+  - Strategy, Transformation & Advisory
+  - SI & Engineering
+  - Cloud Infrastructure & Cyber
+  - Managed Services & Operations
+  - Data, AI & Automation
+
+# UNSPSC segments (first two digits) that are hard physical goods / materiel — the
+# OCDS proxy for the old "Goods hard physical Category" gate. Addressable IT/professional
+# services live in segments 43 (IT), 80/81 (professional/engineering services), 83
+# (telecom services); these are deliberately NOT listed.
+hard_goods_unspsc_segments:
+  ["11","12","13","14","15","20","21","22","23","24","25","26","27","30","31",
+   "32","39","40","41","46","47","48","49","52","53","54","55","56","60"]
+
+# Only these explicit signals rescue an otherwise physical/goods contract.
+strong_addressable_desc:
+  - '\bsoftware (?:licen[cs]e|subscription|development|engineering|implementation|migration|support|maintenance)\b'
+  - '\b(?:saas|software as a service|cloud services?|cloud subscription|cloud platform)\b'
+  - '\b(?:data platform|data engineering|data migration|data analytics|business intelligence|power bi)\b'
+  - '\b(?:cybersecurity|cyber security|security operations|siem|soc|identity and access management)\b'
+  - '\b(?:application development|application implementation|systems integration|system integration)\b'
+
+# Non-addressable subject matter over title+description (physical/business services and
+# hard-goods words). Matches here exclude the contract unless a strong rescue also fires.
+non_addressable_desc:
+  - '\breal estate\b'
+  - '\bproperty\b'
+  - '\bconstruction\b'
+  - '\bfacilities management\b'
+  - '\bfacility maintenance\b'
+  - '\bcleaning\b'
+  - '\bcatering\b'
+  - '\bwaste\b'
+  - '\bfreight\b'
+  - '\btaxi services?\b'
+  - '\bpassenger transport(?:ation)?\b'
+  - '\brelocation\b'
+  - '\bmedical services?\b'
+  - '\bhealth services?\b'
+  - '\brecruitment\b'
+  - '\benergy supply\b'
+  - '\bsecurity guard\b'
+  - '\bguarding\b'
+  - '\bshipbuilding\b'
+  - '\baircraft maintenance and repair services?\b'
+  - '\bmarine craft maintenance and repair services?\b'
+  - '\bvehicle maintenance and repair services?\b'
+  - '\bweapon(?:s)? maintenance\b'
+  - '\bmunitions?\b'
+  - '\bmissiles?\b'
+  - '\bammunition\b'
+  - '\bfuel\b'
+  - '\buniforms?\b'
+
+supplier_hints:
+  - ['\b(?:amazon web services|aws)\b', "Cloud Infrastructure & Cyber", 4, "AWS supplier"]
+  - ['\bmicrosoft\b', "Cloud Infrastructure & Cyber", 2, "Microsoft supplier"]
+  - ['\b(?:databricks|snowflake|tableau|informatica|alteryx|palantir)\b', "Data, AI & Automation", 4, "data-platform supplier"]
+  - ['\bsap\b', "SI & Engineering", 3, "SAP supplier"]
+  - ['\b(?:servicenow|salesforce|workday)\b', "Managed Services & Operations", 2, "enterprise-platform supplier"]
+
+description_rules:
+  "Data, AI & Automation":
+    - ['\bdata (?:platform|integration|migration|engineering|management|governance|services?|warehouse|lake|quality|remediation)\b', 14, "explicit data work"]
+    - ['\bdata remediation\b', 16, "data remediation"]
+    - ['\b(?:analytics|business intelligence|power bi|tableau|databricks|snowflake)\b', 14, "analytics / BI"]
+    - ['\b(?:artificial intelligence|machine learning|generative ai|genai|automation|rpa)\b', 15, "AI / automation"]
+  "Cloud Infrastructure & Cyber":
+    - ['\bcloud services?\b', 18, "explicit cloud services"]
+    - ['\btelecommunications services?\b', 16, "explicit telecommunications services"]
+    - ['\b(?:infrastructure hosting services?|hosting services?)\b', 16, "infrastructure hosting"]
+    - ['\b(?:security accreditation|security grading|certification and accreditation|certification, accreditation)\b', 15, "security accreditation / grading"]
+    - ['\b(?:aws|amazon web services|azure|gcp|cloud migration|cloud hosting|cloud infrastructure)\b', 15, "cloud platform / infrastructure"]
+    - ['\b(?:cybersecurity|cyber security|security operations|siem|soc|zero trust|identity and access management|irap)\b', 15, "cybersecurity"]
+    - ['\bict security (?:uplift|upgrade|services?|support)\b', 17, "ICT security uplift / support"]
+    - ['\b(?:network architecture|network engineering|network implementation|network infrastructure|telecommunications network|network design services?)\b', 12, "network infrastructure"]
+    - ['\b(?:data centre services?|data center services?|data backup storage services?|ict hosting platform|storage replacement and implementation)\b', 16, "data-centre / hosting infrastructure"]
+  "SI & Engineering":
+    - ['^(?:ict services?|information technology services?|information and communications? technology services?|digital technology services?)\.?$', 16, "explicit ICT / technology services"]
+    - ['^ict capability$', 15, "explicit ICT capability"]
+    - ['\b(?:integration and development services?|system development|systems development|software developer services?|software engineers?)\b', 15, "system/software development"]
+    - ['\b(?:open system architecture|open systems architecture)\b', 14, "open systems architecture"]
+    - ['\b(?:simulation capability|core simulation capability|live virtual constructive)\b', 14, "simulation capability"]
+    - ['\bpilot training system\b', 13, "training system"]
+    - ['\b(?:systems? integration(?: services?)?|systems? integrator services?|platform integration|application integration|integration services?)\b', 18, "systems / platform integration"]
+    - ['\b(?:software development|application development|software engineering|devops|devsecops)\b', 14, "software engineering"]
+    - ['\b(?:systems? engineering|mbse|digital engineering|requirements engineering)\b', 13, "systems engineering"]
+    - ['\b(?:sap|s/4hana|oracle erp|erp|servicenow|salesforce)\b', 13, "enterprise platform"]
+    - ['\b(?:solution architecture|enterprise architecture|technical architecture|ict architecture)\b', 12, "architecture"]
+    - ['\b(?:mission systems?|command and control|c4isr|battle management|simulation system)\b', 13, "mission / simulation systems"]
+  "Strategy, Transformation & Advisory":
+    - ['\b(?:program management|project administration services?|business analysis services?|requirements workshop|scoping study|project definition study|solutions study|definition study)\b', 13, "program / analysis / study"]
+    - ['\b(?:strategy|strategic advisory|advisory services?|business advisory)\b', 12, "strategy / advisory"]
+    - ['\b(?:business case|feasibility study|options analysis|concept assessment|independent review|assurance)\b', 13, "assessment / assurance"]
+    - ['\b(?:business transformation|operating model|organisational design|process improvement|change management)\b', 13, "transformation / change"]
+    - ['\b(?:training services?|course development|training delivery|coaching|mentoring)\b', 13, "training / learning"]
+    - ['\b(?:pmo|project management office|program management office|portfolio management|project support services?|project management services?|project management support(?: services?)?)\b', 12, "PMO / project support"]
+  "Managed Services & Operations":
+    - ['\b(?:applications? managed services? partner arrangement|applications? managed services?|managed services?)\b', 20, "explicit managed services"]
+    - ['\b(?:end user support services?|ict service desk|computer support services?|hardware support services?)\b', 16, "end-user / service-desk support"]
+    - ['\b(?:ict|information technology|it)\s+(?:management and )?support services?\b', 18, "ICT management / support services"]
+    - ['^ict support$', 17, "explicit ICT support"]
+    - ['^ict personnel services$', 14, "ICT personnel services"]
+    - ['\bapplication sustainment support\b', 17, "application sustainment support"]
+    - ['^software maintenance$', 15, "software maintenance"]
+    - ['\b(?:ict|information technology|it)\s+(?:operations?|operational support|managed support)\b', 17, "ICT operations / managed support"]
+    - ['\b(?:systems? operations? and sustainment|systems? sustainment services?|systems? administration services?|systems? operations?|centralised processing services?|centralized processing services?)\b', 15, "systems operations / sustainment"]
+    - ['\b(?:software sustainment and support|software maintenance and support)\b', 15, "software sustainment / support"]
+    - ['\b(?:managed services?|application managed services?|service desk|help desk)\b', 12, "managed service"]
+    - ['\b(?:application support|system support|software support|application maintenance|system maintenance)\b', 11, "application/system support"]

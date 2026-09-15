@@ -1,0 +1,122 @@
+# Tier-1 deterministic theme classification rules (spec Section 7.2).
+#
+# Cheap, fast, reproducible, re-runnable over the whole corpus for free. Only
+# contracts these rules leave unclassified (and above a value threshold) fall
+# through to the Tier-2 LLM classifier in a later phase.
+#
+# Matching (see processing/themes.py):
+#   - keywords     : case-insensitive whole-word/phrase match over title + description.
+#   - unspsc_prefix: contract.unspsc_code starts with one of these strings.
+# A theme matches if ANY keyword OR ANY unspsc_prefix hits. Confidence is fixed
+# per signal type so LLM-derived classifications stay distinguishable later.
+#
+# Confidence convention (Tier-1 is deterministic, not probabilistic):
+#   unspsc match -> 0.80 (structured code, strong), keyword match -> 0.60.
+
+confidence:
+  unspsc: 0.800
+  keyword: 0.600
+
+themes:
+  nuclear-submarines:
+    keywords:
+      - submarine
+      - submarines
+      - aukus
+      - ssn
+      - ssn-aukus
+      - nuclear-powered
+      - nuclear powered
+      - collins class
+      - virginia class
+      - undersea
+      - naval nuclear
+      - submarine rotational force
+      - srf-west
+      - australian naval infrastructure
+      - submarine sustainment
+    unspsc_prefix:
+      - "251317"   # military watercraft / submarines
+
+  workforce:
+    keywords:
+      - workforce
+      - recruitment
+      - recruiting
+      - staffing
+      - labour hire
+      - labour-hire
+      - talent
+      - skilling
+      - upskilling
+      - reskilling
+      - retention
+      - learning and development
+      - training services
+      - capability uplift
+      - personnel services
+      - contingent workforce
+    unspsc_prefix:
+      - "801116"   # temporary personnel services
+      - "8611"     # education and training services
+      - "8610"
+
+  defensive-cyber:
+    keywords:
+      - cyber
+      - cybersecurity
+      - cyber security
+      - information security
+      - infosec
+      - security operations centre
+      - security operations center
+      - network defence
+      - network defense
+      - penetration test
+      - penetration testing
+      - threat intelligence
+      - vulnerability assessment
+      - endpoint protection
+      - zero trust
+      - siem
+      - incident response
+    unspsc_prefix:
+      - "432332"   # security / protection software
+      - "811118"   # information technology security services
+
+  decision-advantage:
+    keywords:
+      - command and control
+      - c2 system
+      - c4isr
+      - isr
+      - intelligence surveillance
+      - situational awareness
+      - common operating picture
+      - decision support
+      - data analytics
+      - artificial intelligence
+      - machine learning
+      - targeting
+      - information advantage
+      - joint effects
+      - geospatial intelligence
+    unspsc_prefix:
+      - "811015"   # information technology consultation (analytics/AI delivery)
+
+  digital-engineering:
+    keywords:
+      - digital engineering
+      - model-based systems engineering
+      - model based systems engineering
+      - mbse
+      - digital twin
+      - digital thread
+      - systems engineering
+      - product lifecycle management
+      - simulation and modelling
+      - simulation and modeling
+      - computer-aided design
+      - digital modelling
+    unspsc_prefix:
+      - "811015"   # engineering / IT delivery overlap; kept low-specificity

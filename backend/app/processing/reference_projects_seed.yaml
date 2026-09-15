@@ -1,0 +1,344 @@
+# Reference-project capability corpus for capability-match scoring.
+#
+# PROVENANCE / HONESTY NOTE
+# These are *illustrative capability descriptions* grounded in each firm's PUBLICLY
+# stated focus areas in the Australian Defence / government market. They are NOT scraped
+# contract records and make no claim about specific engagements, clients, or values.
+# Replace or augment any firm's entries with your own verified engagement history — the
+# loader upserts by (firm_slug, title), so editing this file and re-running the loader is
+# the intended workflow.
+#
+# Applied SYMMETRICALLY: every firm gets a comparable-richness profile so the competitor
+# comparison stays fair. Add/remove entries evenly if you extend it.
+
+firms:
+  accenture:
+    - title: Government digital transformation & service modernisation
+      description: End-to-end digital transformation of citizen-facing and internal
+        government services — service design, legacy system modernisation, and agile
+        delivery of cloud-native applications for Commonwealth agencies.
+      location: Canberra, ACT
+    - title: Cloud migration and platform engineering
+      description: Migration of departmental workloads to public cloud (AWS and Microsoft
+        Azure), landing-zone design, DevSecOps pipelines, and platform engineering for
+        secure government and Defence environments.
+      location: Canberra, ACT
+    - title: SAP S/4HANA ERP implementation
+      description: Enterprise resource planning transformation on SAP S/4HANA covering
+        finance, procurement, supply chain and HR for large Commonwealth departments.
+      location: Canberra, ACT
+    - title: Cyber security uplift and IRAP assessment
+      description: Cyber security strategy, zero-trust architecture, security operations
+        uplift and IRAP-aligned assessment of Defence and national-security ICT systems.
+      location: Canberra, ACT
+    - title: Data, AI and automation platforms
+      description: Enterprise data platforms, data lakes, analytics and machine-learning
+        pipelines, and intelligent automation for Defence and government decision support.
+      location: Canberra, ACT
+    - title: Systems integration and managed services
+      description: Large-scale systems integration across enterprise applications and
+        sustainment via multi-year managed application services for national platforms.
+      location: Australia
+    # --- Inorganic capability: CyberCX acquisition (verified) ---
+    - title: Cyber incident response and crisis management (CyberCX)
+      description: Cyber incident response, digital forensics, breach investigation and
+        crisis management for government, Defence and critical-infrastructure clients,
+        via Accenture's CyberCX business — Asia-Pacific's largest independent cyber firm.
+      location: Australia
+      source: "Accenture acquisition of CyberCX, announced Aug 2025 (~A$1B); newsroom.accenture.com"
+      year: 2025
+    - title: Managed detection and response / security operations (CyberCX)
+      description: 24x7 managed security operations, threat detection and response, and
+        AI-powered cyber defence platforms for Australian government and enterprise, via
+        the CyberCX business now part of Accenture.
+      location: Australia
+      source: "Accenture acquisition of CyberCX, announced Aug 2025; cybercx.com.au"
+      year: 2025
+    - title: Sovereign secure cloud and government cyber (CyberCX)
+      description: Sovereign secure cloud, government-grade cyber security, security
+        clearance-cleared personnel and IRAP-aligned assessment for Defence and
+        national-security environments, via CyberCX.
+      location: Canberra, ACT
+      source: "Accenture acquisition of CyberCX, announced Aug 2025; cybercx.com.au"
+      year: 2025
+    - title: Offensive security, penetration testing and cyber intelligence (CyberCX)
+      description: Security testing, penetration testing, red teaming, cyber threat
+        intelligence and proprietary security tooling for high-assurance government and
+        Defence systems, via CyberCX.
+      location: Australia
+      source: "Accenture acquisition of CyberCX, announced Aug 2025; cybercx.com.au"
+      year: 2025
+    - title: Cyber governance, risk, consulting and training (CyberCX)
+      description: Cyber security strategy, governance, risk and compliance advisory, and
+        workforce training through the CyberCX Academy, for government and Defence clients.
+      location: Australia
+      source: "Accenture acquisition of CyberCX, announced Aug 2025; cybercx.com.au"
+      year: 2025
+
+  deloitte:
+    - title: Technology and digital transformation advisory
+      description: Digital strategy, enterprise technology transformation and program
+        delivery advisory for Commonwealth departments and Defence.
+      location: Canberra, ACT
+    - title: Financial management and program assurance
+      description: Financial management transformation, cost analysis, program assurance
+        and independent gateway reviews for large Defence acquisition programs.
+      location: Canberra, ACT
+    - title: Data analytics and cyber advisory
+      description: Data analytics platforms, risk analytics, and cyber security advisory
+        and assessment services for government and Defence clients.
+      location: Australia
+    - title: Workforce, HR and change management
+      description: Workforce planning, organisational design, HR transformation and
+        change management for public-sector and Defence enterprises.
+      location: Australia
+
+  kpmg:
+    - title: Defence program advisory and assurance
+      description: Independent assurance, program management advisory and gateway reviews
+        for major Defence capability acquisition and sustainment programs.
+      location: Canberra, ACT
+    - title: Financial management and procurement advisory
+      description: Financial management, procurement strategy, commercial advisory and
+        probity services for Commonwealth departments.
+      location: Canberra, ACT
+    - title: Risk, audit and data analytics
+      description: Enterprise risk, internal audit, and data analytics services supporting
+        government assurance and performance functions.
+      location: Australia
+    - title: Workforce and operating-model design
+      description: Operating-model design, workforce strategy and organisational
+        transformation for public-sector clients.
+      location: Australia
+
+  ey:
+    - title: Finance transformation and advisory
+      description: Finance function transformation, financial management and strategic
+        advisory for Commonwealth departments and Defence.
+      location: Canberra, ACT
+    - title: Cyber security and data privacy
+      description: Cyber security strategy, assessment and data-privacy advisory for
+        government and national-security clients.
+      location: Australia
+    - title: Program management and delivery advisory
+      description: Program and project management advisory, delivery assurance and
+        transformation support for large public-sector initiatives.
+      location: Canberra, ACT
+    - title: Data and analytics
+      description: Data strategy, analytics and reporting platform delivery supporting
+        government decision-making.
+      location: Australia
+
+  pwc:
+    - title: Digital and technology consulting
+      description: Digital strategy, technology consulting and enterprise transformation
+        for government and Defence programs.
+      location: Canberra, ACT
+    - title: Program advisory and financial management
+      description: Program advisory, financial management and commercial advisory for
+        large Commonwealth acquisition and reform programs.
+      location: Canberra, ACT
+    - title: Cyber and data analytics
+      description: Cyber security advisory, data analytics and risk services for
+        public-sector clients.
+      location: Australia
+
+  mckinsey:
+    - title: Defence capability and force-structure strategy
+      description: Strategy, force-structure analysis and capability prioritisation for
+        Defence, including operating-model and cost-effectiveness reviews.
+      location: Canberra, ACT
+    - title: Operational and organisational transformation
+      description: Large-scale operational transformation, organisation redesign and
+        performance improvement for government enterprises.
+      location: Australia
+    - title: Procurement and cost optimisation
+      description: Procurement transformation, cost optimisation and supply-chain strategy
+        for public-sector and Defence clients.
+      location: Australia
+
+  bcg:
+    - title: Defence strategy and capability transformation
+      description: Corporate and capability strategy, transformation design and digital
+        strategy for Defence and national-security organisations.
+      location: Canberra, ACT
+    - title: Digital and technology strategy
+      description: Digital strategy, technology operating-model design and large-scale
+        change for government enterprises.
+      location: Australia
+    - title: Operations and cost transformation
+      description: Operations improvement, cost transformation and organisational
+        effectiveness programs for the public sector.
+      location: Australia
+
+  bain:
+    - title: Strategy and performance improvement
+      description: Corporate strategy, performance improvement and operating-model design
+        for government and Defence clients.
+      location: Canberra, ACT
+    - title: Procurement and cost transformation
+      description: Procurement strategy, cost transformation and supply-chain optimisation
+        for large public-sector organisations.
+      location: Australia
+    - title: Organisational change and transformation
+      description: Organisation design, change management and transformation delivery for
+        complex government programs.
+      location: Australia
+
+  leidos:
+    - title: Defence mission systems integration
+      description: Systems integration and delivery of Defence mission systems, C4ISR,
+        and secure command-and-control software for the Australian Defence Force.
+      location: Canberra, ACT
+    - title: Secure ICT and cyber operations
+      description: Secure ICT infrastructure, cyber operations and mission software
+        sustainment for Defence and national-security environments.
+      location: Canberra, ACT
+    - title: Logistics and enterprise IT
+      description: Enterprise IT, logistics information systems and data services
+        supporting Defence sustainment and operations.
+      location: Australia
+
+  dxc:
+    - title: Enterprise IT and managed services
+      description: Enterprise IT outsourcing, application management, service desk and
+        multi-year managed services for government and Defence.
+      location: Canberra, ACT
+    - title: Cloud and data-centre modernisation
+      description: Data-centre consolidation, cloud migration and hybrid infrastructure
+        modernisation for Commonwealth agencies.
+      location: Australia
+    - title: Application development and integration
+      description: Custom application development, systems integration and legacy
+        modernisation for large government platforms.
+      location: Australia
+
+  ibm:
+    - title: Systems integration and cloud
+      description: Large-scale systems integration, hybrid cloud platforms and enterprise
+        modernisation for government and Defence.
+      location: Canberra, ACT
+    - title: Data, AI and automation
+      description: Data platforms, AI and analytics, and intelligent automation supporting
+        government decision-making and operations.
+      location: Australia
+    - title: Cyber security and mainframe modernisation
+      description: Cyber security services and modernisation of mission-critical mainframe
+        and core systems for large public-sector clients.
+      location: Australia
+
+  thales:
+    - title: Command, control and communications systems
+      description: Design, integration and sustainment of C4I, secure communications and
+        battlefield management systems for the Australian Defence Force.
+      location: Australia
+    - title: Radar, sonar and sensor systems
+      description: Development and sustainment of radar, sonar and sensor systems for
+        naval, land and air Defence platforms.
+      location: Australia
+    - title: Protected vehicles and munitions
+      description: Manufacture and sustainment of protected military vehicles, weapons and
+        ammunition for Defence.
+      location: Australia
+    - title: Air traffic management and cyber
+      description: Air traffic management systems and defence-grade cyber security
+        solutions for critical infrastructure.
+      location: Canberra, ACT
+
+  bae-systems:
+    - title: Combat and electronic warfare systems
+      description: Combat systems integration, electronic warfare and defence electronics
+        for naval, land and air platforms.
+      location: Australia
+    - title: Naval shipbuilding and sustainment
+      description: Design, build and sustainment of naval vessels and complex maritime
+        platforms for the Royal Australian Navy.
+      location: Australia
+    - title: Defence platform sustainment
+      description: Through-life support, maintenance and upgrade of major Defence
+        platforms and weapons systems.
+      location: Australia
+
+  boeing-defence:
+    - title: Aerospace platforms and uncrewed systems
+      description: Development, integration and sustainment of crewed and uncrewed
+        aerospace platforms for Defence.
+      location: Australia
+    - title: Training and simulation systems
+      description: Design and delivery of training, simulation and mission-support systems
+        for the Australian Defence Force.
+      location: Australia
+    - title: Aircraft sustainment and support
+      description: Through-life sustainment, maintenance and engineering support for
+        military aircraft fleets.
+      location: Australia
+
+  lockheed-martin:
+    - title: C4ISR and combat systems
+      description: Integration of C4ISR, combat systems and mission software for Defence
+        air, land, sea and space domains.
+      location: Australia
+    - title: Aerospace and missile systems
+      description: Delivery and sustainment of aerospace platforms, missile systems and
+        guided weapons for Defence.
+      location: Australia
+    - title: Space and satellite systems
+      description: Space mission systems, satellite ground stations and secure
+        communications for national-security clients.
+      location: Australia
+
+  jacobs:
+    - title: Defence estate engineering and infrastructure
+      description: Engineering, design and program management for Defence estate
+        infrastructure, facilities and base redevelopment projects.
+      location: Australia
+    - title: Facilities and asset management
+      description: Facilities management, asset management and technical services for
+        Defence and government property portfolios.
+      location: Australia
+    - title: Environmental and remediation services
+      description: Environmental assessment, contamination remediation and sustainability
+        services for Defence sites and infrastructure.
+      location: Australia
+
+  kbr:
+    - title: Defence engineering and program management
+      description: Engineering services, program and project management and technical
+        advisory for Defence capability and infrastructure programs.
+      location: Canberra, ACT
+    - title: Logistics and sustainment support
+      description: Logistics, supply-chain and sustainment support services for Defence
+        platforms and operations.
+      location: Australia
+    - title: Systems engineering and advisory
+      description: Systems engineering, integration support and specialist technical
+        advisory for complex Defence programs.
+      location: Australia
+
+  babcock:
+    - title: Naval and marine engineering
+      description: Marine engineering, naval platform sustainment and asset management for
+        the Royal Australian Navy.
+      location: Australia
+    - title: Aviation and mission support
+      description: Aviation support, mission-critical services and through-life support
+        for Defence aviation assets.
+      location: Australia
+    - title: Asset management and sustainment
+      description: Integrated asset management, maintenance and sustainment of complex
+        Defence equipment and infrastructure.
+      location: Australia
+
+  nova-systems:
+    - title: Test, evaluation and systems engineering
+      description: Independent test and evaluation, systems engineering and acceptance
+        services for Defence capability projects.
+      location: Canberra, ACT
+    - title: Project and engineering services
+      description: Project management, engineering and specialist technical services for
+        Defence acquisition and sustainment.
+      location: Australia
+    - title: Capability and integration support
+      description: Capability development, integration support and mission-systems
+        engineering for Defence programs.
+      location: Australia

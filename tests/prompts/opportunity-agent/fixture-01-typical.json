@@ -1,0 +1,21 @@
+{
+  "description": "Typical case: a single, clear pre-solicitation notice with an explicit value and date.",
+  "input": {
+    "source_documents": [
+      {
+        "type": "agency_update",
+        "id": "src-0001",
+        "content": "The Defence Digital Foundry has published a pre-solicitation notice indicating intent to procure a next-generation secure collaboration platform for the Joint Targeting Programme, with an estimated contract value of GBP 4.2 million. Responses to the market engagement are due by 30 September.",
+        "published_at": "2026-07-15",
+        "url": "https://example.gov/notices/src-0001"
+      }
+    ],
+    "known_opportunities": []
+  },
+  "expectations": {
+    "schema_valid": true,
+    "min_items": 1,
+    "required_fields_present": ["title", "agency", "source_references"],
+    "notes": "estimated_value_gbp should be extracted as 4200000; stage should be pre_solicitation or early_signal; confidence_score should be relatively high (>0.6) given the explicit, unambiguous source."
+  }
+}

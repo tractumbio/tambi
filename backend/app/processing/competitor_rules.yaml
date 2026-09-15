@@ -1,0 +1,61 @@
+# Supplier -> competitor_group mapping (spec Section 7.3).
+#
+# Supplier names in AusTender are inconsistently entered, so matching runs against
+# the *normalised* name (processing/transform.normalise_name: lowercased, punctuation
+# and common company suffixes like "pty"/"ltd"/"australia" stripped). Two match
+# kinds, checked in this order for each group:
+#   abns          : exact match on the party ABN (strongest signal; add as confirmed).
+#   name_tokens   : whole-word match within the normalised name. Use for short or
+#                   ambiguous fragments (ey, bae, nova) to avoid substring collisions.
+#   name_contains : substring match within the normalised name. Use for distinctive
+#                   names that cannot collide (accenture, lockheed).
+#
+# Everything unmatched falls to `other`; the pipeline emits a highest-value
+# unmatched-supplier report after each run so this file can be improved.
+
+groups:
+  - slug: accenture
+    name_contains: [accenture]
+  - slug: deloitte
+    name_contains: [deloitte]
+  - slug: pwc
+    name_contains: [pricewaterhousecoopers, price waterhouse]
+    name_tokens: [pwc]
+  - slug: kpmg
+    name_contains: [kpmg]
+  - slug: ey
+    name_contains: [ernst young, ernst and young]
+    name_tokens: [ey]
+  - slug: ibm
+    name_contains: [international business machines]
+    name_tokens: [ibm]
+  - slug: dxc
+    name_contains: [dxc]
+  - slug: leidos
+    name_contains: [leidos]
+  - slug: lockheed-martin
+    name_contains: [lockheed]
+  - slug: bae-systems
+    name_contains: [bae systems]
+    name_tokens: [bae]
+  - slug: thales
+    name_contains: [thales]
+  - slug: boeing-defence
+    name_contains: [boeing]
+  - slug: babcock
+    name_contains: [babcock]
+  - slug: kbr
+    name_contains: [kellogg brown]
+    name_tokens: [kbr]
+  - slug: jacobs
+    name_contains: [jacobs]
+  - slug: nova-systems
+    name_contains: [nova systems]
+  - slug: mckinsey
+    name_contains: [mckinsey]
+  - slug: bcg
+    name_contains: [boston consulting]
+    name_tokens: [bcg]
+  - slug: bain
+    name_contains: [bain and company, bain & company]
+    name_tokens: [bain]

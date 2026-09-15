@@ -1,0 +1,26 @@
+# --- Web framework ---
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic>=2.9.2,<3.0.0
+pydantic-settings>=2.5.2,<3.0.0
+
+# --- AI providers ---
+httpx==0.27.2
+openai==1.47.1              # chat + text-embedding-3 (active embedding backend)
+anthropic>=0.40,<2         # Claude LLM synthesis, text-to-SQL, web-search news harvest
+PyYAML==6.0.3              # theme / competitor / service-offering rule files
+
+# Optional embedding backends (not installed in the lean deploy image):
+#   voyageai>=0.3            # embedding_backend=voyage
+#   sentence-transformers    # embedding_backend=local (pulls torch — large)
+
+# --- Database (production) ---
+sqlalchemy>=2.0.43,<2.1   # >=2.0.43 for Python 3.14 typing compatibility
+alembic==1.13.2
+psycopg[binary]==3.3.5
+
+# --- Dev / test / lint ---
+pytest==8.3.3
+pytest-asyncio==0.24.0
+ruff==0.6.9
+mypy==1.11.2

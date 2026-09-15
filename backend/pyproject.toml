@@ -1,0 +1,25 @@
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's Depends()/Query() in argument defaults is the intended pattern.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query"]
+
+[tool.mypy]
+python_version = "3.11"
+disallow_untyped_defs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["../tests/backend"]
+asyncio_mode = "auto"
+markers = [
+    "unit: fast, isolated tests with dependencies mocked",
+    "integration: multi-component tests, e.g. API through to a repository",
+    "regression: tests added for a specific previously-fixed bug",
+    "prompt_eval: AI prompt/agent fixture tests requiring a running LLM provider",
+]

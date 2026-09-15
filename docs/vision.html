@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TAMBI 2026 — Defence Contract Intelligence Platform</title>
+<style>
+  :root{
+    --acn-purple:#A100FF;
+    --acn-purple-mid:#7500C0;
+    --acn-purple-deep:#460073;
+    --acn-purple-abyss:#26004D;
+    --ink:#000000;
+    --ink-soft:#1A1A1A;
+    --body:#3C3C3C;
+    --muted:#6E6E6E;
+    --line:#E4E4E4;
+    --wash:#F7F5FA;
+    --wash-2:#FFFFFF;
+    --max:1120px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:"Graphik","Segoe UI",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    color:var(--body);
+    background:var(--wash-2);
+    line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 40px;}
+
+  /* ---------- Chevron motif ---------- */
+  .chev{
+    display:inline-block;
+    color:var(--acn-purple);
+    font-weight:700;
+    transform:translateY(-1px);
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    background:
+      radial-gradient(1100px 620px at 78% -12%, rgba(161,0,255,.55) 0%, rgba(161,0,255,0) 62%),
+      linear-gradient(150deg,#26004D 0%, #12002B 46%, #000000 100%);
+    color:#fff;
+    padding:96px 0 84px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::after{
+    content:">";
+    position:absolute;
+    right:-60px; top:-70px;
+    font-size:520px;
+    line-height:1;
+    font-weight:700;
+    color:rgba(161,0,255,.13);
+    pointer-events:none;
+  }
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--acn-purple);
+    font-weight:600;
+    margin:0 0 26px;
+  }
+  .hero h1{
+    font-size:60px;
+    line-height:1.06;
+    letter-spacing:-.025em;
+    margin:0 0 26px;
+    font-weight:700;
+    color:#fff;
+    max-width:15ch;
+  }
+  .hero h1 em{font-style:normal;color:var(--acn-purple);}
+  .hero .lede{
+    font-size:20px;
+    line-height:1.6;
+    color:rgba(255,255,255,.80);
+    max-width:64ch;
+    margin:0 0 40px;
+    font-weight:300;
+  }
+  .hero-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px 40px;
+    padding-top:30px;
+    border-top:1px solid rgba(255,255,255,.16);
+    font-size:13px;
+    color:rgba(255,255,255,.62);
+  }
+  .hero-meta b{
+    display:block;
+    color:#fff;
+    font-weight:600;
+    font-size:14px;
+    letter-spacing:.01em;
+    margin-bottom:2px;
+  }
+
+  /* ---------- Sections ---------- */
+  section{padding:82px 0;}
+  .alt{background:var(--wash);}
+  .dark{background:var(--ink);color:rgba(255,255,255,.78);}
+
+  h2{
+    font-size:38px;
+    line-height:1.16;
+    letter-spacing:-.02em;
+    color:var(--ink);
+    font-weight:700;
+    margin:0 0 20px;
+    max-width:22ch;
+  }
+  .dark h2{color:#fff;}
+  .sec-eyebrow{
+    font-size:11px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--acn-purple);
+    font-weight:600;
+    margin:0 0 14px;
+  }
+  .sec-intro{
+    font-size:18px;
+    max-width:70ch;
+    color:var(--muted);
+    font-weight:300;
+    margin:0 0 46px;
+  }
+  .dark .sec-intro{color:rgba(255,255,255,.6);}
+
+  h3{font-size:20px;color:var(--ink);margin:0 0 10px;font-weight:600;letter-spacing:-.01em;}
+  h4{
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--acn-purple-mid);
+    font-weight:700;
+    margin:32px 0 12px;
+  }
+  p{margin:0 0 16px;}
+
+  /* ---------- Problem grid ---------- */
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--line);border:1px solid var(--line);}
+  .grid-3 > div{background:#fff;padding:32px 28px;}
+  .grid-3 h3{font-size:17px;}
+  .grid-3 p{font-size:15px;color:var(--muted);margin:0;}
+  .num{
+    font-size:12px;
+    font-weight:700;
+    color:var(--acn-purple);
+    letter-spacing:.14em;
+    display:block;
+    margin-bottom:14px;
+  }
+
+  /* ---------- Pillars ---------- */
+  .pillar{
+    display:grid;
+    grid-template-columns:96px 1fr;
+    gap:0;
+    border-top:1px solid var(--line);
+    padding:56px 0;
+  }
+  .pillar:last-of-type{border-bottom:1px solid var(--line);}
+  .pillar-num{
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:.14em;
+    color:var(--acn-purple);
+    padding-top:6px;
+  }
+  .pillar-num span{
+    display:block;
+    font-size:52px;
+    line-height:1;
+    letter-spacing:-.03em;
+    color:var(--line);
+    margin-top:10px;
+  }
+  .pillar-body h3{font-size:29px;letter-spacing:-.018em;margin-bottom:6px;}
+  .pillar-tag{
+    font-size:13px;
+    color:var(--acn-purple-mid);
+    font-weight:600;
+    letter-spacing:.02em;
+    margin:0 0 20px;
+  }
+  .pillar-body > p{max-width:74ch;}
+
+  .cols-2{display:grid;grid-template-columns:1fr 1fr;gap:36px;margin-top:6px;}
+
+  ul.tick{list-style:none;padding:0;margin:0;}
+  ul.tick li{
+    position:relative;
+    padding-left:24px;
+    margin-bottom:11px;
+    font-size:15px;
+    color:var(--body);
+  }
+  ul.tick li::before{
+    content:">";
+    position:absolute;
+    left:0; top:0;
+    color:var(--acn-purple);
+    font-weight:700;
+  }
+  ul.tick li b{color:var(--ink);font-weight:600;}
+
+  /* ---------- Example / quote card ---------- */
+  .example{
+    background:var(--wash);
+    border-left:3px solid var(--acn-purple);
+    padding:22px 26px;
+    margin-top:22px;
+    font-size:15px;
+  }
+  .example .q{
+    color:var(--ink);
+    font-weight:600;
+    margin:0 0 10px;
+  }
+  .example .a{color:var(--muted);margin:0;font-size:14.5px;}
+  .example .tagline{
+    display:block;
+    margin-top:14px;
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--muted);
+    font-weight:600;
+  }
+
+  /* ---------- Flow ---------- */
+  .flow{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:2px;
+    background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.14);
+    margin-top:12px;
+  }
+  .flow > div{background:var(--ink);padding:26px 22px;}
+  .flow .step{
+    font-size:11px;
+    letter-spacing:.16em;
+    color:var(--acn-purple);
+    font-weight:700;
+    display:block;
+    margin-bottom:12px;
+  }
+  .flow h3{color:#fff;font-size:16px;margin-bottom:8px;}
+  .flow p{font-size:14px;color:rgba(255,255,255,.58);margin:0;}
+
+  /* ---------- Roadmap ---------- */
+  .phase{
+    display:grid;
+    grid-template-columns:190px 1fr;
+    gap:28px;
+    padding:26px 0;
+    border-bottom:1px solid var(--line);
+    align-items:start;
+  }
+  .phase:first-of-type{border-top:1px solid var(--line);}
+  .phase-when{
+    font-size:13px;
+    font-weight:700;
+    color:var(--acn-purple);
+    letter-spacing:.04em;
+    padding-top:2px;
+  }
+  .phase-when small{
+    display:block;
+    color:var(--muted);
+    font-weight:400;
+    letter-spacing:0;
+    font-size:13px;
+    margin-top:3px;
+  }
+  .phase h3{font-size:18px;margin-bottom:6px;}
+  .phase p{font-size:15px;color:var(--muted);margin:0;max-width:70ch;}
+
+  /* ---------- Callout ---------- */
+  .callout{
+    border:1px solid var(--acn-purple);
+    background:linear-gradient(135deg, rgba(161,0,255,.05), rgba(161,0,255,0));
+    padding:34px 38px;
+    margin-top:12px;
+  }
+  .callout h3{color:var(--acn-purple-deep);}
+  .callout p{max-width:76ch;margin-bottom:0;}
+  .callout p + p{margin-top:14px;}
+
+  /* ---------- Footer ---------- */
+  footer{
+    background:var(--ink);
+    color:rgba(255,255,255,.42);
+    padding:44px 0;
+    font-size:13px;
+  }
+  footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:baseline;}
+  footer b{color:#fff;font-weight:600;}
+  footer .mark{color:var(--acn-purple);font-weight:700;font-size:15px;letter-spacing:.02em;}
+
+  .note{
+    font-size:13px;
+    color:var(--muted);
+    font-style:italic;
+    margin-top:18px;
+    padding-left:14px;
+    border-left:2px solid var(--line);
+  }
+
+  @media (max-width:900px){
+    .wrap{padding:0 22px;}
+    .hero{padding:64px 0 56px;}
+    .hero h1{font-size:38px;}
+    .hero .lede{font-size:17px;}
+    .hero::after{font-size:280px;right:-40px;top:-30px;}
+    h2{font-size:28px;}
+    .grid-3,.flow,.cols-2{grid-template-columns:1fr;}
+    .pillar{grid-template-columns:1fr;gap:14px;}
+    .pillar-num span{display:inline;font-size:15px;color:var(--acn-purple);margin-left:8px;}
+    .phase{grid-template-columns:1fr;gap:8px;}
+    section{padding:56px 0;}
+  }
+
+  @media print{
+    .hero{background:#26004D !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .dark{background:#000 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    section{padding:36px 0;page-break-inside:avoid;}
+    .pillar{page-break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Accenture <span class="chev">&gt;</span> Australia &nbsp;|&nbsp; Defence &amp; National Security</p>
+    <h1>The defence contract landscape, <em>finally legible</em>.</h1>
+    <p class="lede">
+      TAMBI 2026 turns Australia's public procurement record into a living intelligence
+      capability — a platform where Accenture leadership can see the market at a glance,
+      interrogate it in plain English, and commission research-grade analysis on demand.
+    </p>
+    <div class="hero-meta">
+      <div><b>Primary source</b>AusTender — Commonwealth contract notices</div>
+      <div><b>Audience</b>Accenture ANZ leadership &amp; Defence practice</div>
+      <div><b>Architecture</b>Three pillars, one data spine</div>
+      <div><b>Status</b>Vision — pre-build</div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ THE CASE ============ -->
+<section>
+  <div class="wrap">
+    <p class="sec-eyebrow">The case for building this</p>
+    <h2>The data is public. The insight is not.</h2>
+    <p class="sec-intro">
+      Every Commonwealth defence contract above the reporting threshold is published on AusTender.
+      The information advantage was never about access — it is about the distance between a
+      raw notice and a decision. Today that distance is measured in analyst-weeks.
+    </p>
+
+    <div class="grid-3">
+      <div>
+        <span class="num">01</span>
+        <h3>The record is fragmented</h3>
+        <p>Contract notices, amendments, standing offers and panel arrangements live in separate
+        views with inconsistent supplier naming. Reconstructing a single vendor's true position
+        across the portfolio is manual, slow, and rarely repeated.</p>
+      </div>
+      <div>
+        <span class="num">02</span>
+        <h3>Questions outpace analysis</h3>
+        <p>Leadership questions arrive faster than they can be answered. By the time an analyst
+        returns a deck, the question has moved on — so most questions are simply never asked.</p>
+      </div>
+      <div>
+        <span class="num">03</span>
+        <h3>Signals expire quietly</h3>
+        <p>A contract approaching expiry is a re-bid opportunity with a clock on it. Without
+        systematic monitoring, those windows are noticed late or missed entirely.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE VISION ============ -->
+<section class="alt">
+  <div class="wrap">
+    <p class="sec-eyebrow">The vision</p>
+    <h2>One platform. Three levels of depth.</h2>
+    <p class="sec-intro">
+      The architecture follows how leaders actually consume intelligence — a glance, a question,
+      and occasionally a genuine investigation. Each pillar serves one of those modes, and each
+      draws on the same governed data spine underneath.
+    </p>
+
+    <div class="callout">
+      <h3>The organising principle</h3>
+      <p>
+        <b>Pillar I answers what you already knew to ask.</b> Pillar II answers what occurred to you
+        in the meeting. Pillar III answers what nobody had time to investigate.
+      </p>
+      <p>
+        Most analytics products only build the first. The compounding value of TAMBI is that the
+        questions asked in Pillar II become the saved views of Pillar I, and the patterns surfaced
+        in Pillar III become the questions worth asking next.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PILLARS ============ -->
+<section>
+  <div class="wrap">
+    <p class="sec-eyebrow">The three pillars</p>
+    <h2>From glance, to conversation, to investigation.</h2>
+
+    <!-- PILLAR 1 -->
+    <div class="pillar">
+      <div class="pillar-num">PILLAR<span>01</span></div>
+      <div class="pillar-body">
+        <h3>The Intelligence Dashboard</h3>
+        <p class="pillar-tag">Curated, always-on, shaped by what leadership needs to see right now</p>
+        <p>
+          The front door. A deliberately opinionated view of the defence contract market —
+          not every metric that could be shown, but the handful that drive decisions this quarter.
+          Views are configuration, not code, so the dashboard evolves at the speed of leadership's
+          attention rather than the speed of a release cycle.
+        </p>
+
+        <div class="cols-2">
+          <div>
+            <h4>What leadership sees</h4>
+            <ul class="tick">
+              <li><b>Market shape</b> — total addressable defence spend by agency, capability area and financial year</li>
+              <li><b>Supplier league tables</b> — who holds what, ranked and trended over time</li>
+              <li><b>Expiry pipeline</b> — contracts reaching end-of-term in the next 6–18 months</li>
+              <li><b>Category drilldown</b> — ICT, professional services, sustainment, engineering, logistics</li>
+              <li><b>Accenture position</b> — where we hold work, where competitors hold it, where nobody does</li>
+            </ul>
+          </div>
+          <div>
+            <h4>Design commitments</h4>
+            <ul class="tick">
+              <li><b>Fast</b> — pre-computed metrics; no model call sits in the render path</li>
+              <li><b>Configurable</b> — new views defined as saved configurations, promoted from real questions</li>
+              <li><b>Honest</b> — every figure traceable to its source notices, with coverage gaps stated plainly</li>
+              <li><b>Presentable</b> — built to be projected in a leadership meeting without apology</li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="note">
+          Deliberate constraint: the dashboard does not attempt to answer everything. Its job is to
+          be instantly readable and always current. Depth belongs to Pillars II and III.
+        </p>
+      </div>
+    </div>
+
+    <!-- PILLAR 2 -->
+    <div class="pillar">
+      <div class="pillar-num">PILLAR<span>02</span></div>
+      <div class="pillar-body">
+        <h3>The Conversational Layer</h3>
+        <p class="pillar-tag">Natural language interrogation of the full dataset — powered by Claude</p>
+        <p>
+          The dashboard shows the questions we anticipated. This pillar handles every question we
+          did not. A leader asks in plain English; the system translates that into queries against
+          the contract warehouse, runs them, and returns a narrated answer with the underlying
+          figures and a chart — in seconds, not days.
+        </p>
+
+        <div class="cols-2">
+          <div>
+            <h4>How it works</h4>
+            <ul class="tick">
+              <li><b>Claude with tool access</b>, not document retrieval — the data is structured, so the model queries it directly rather than guessing from embedded text</li>
+              <li><b>A governed tool surface</b> — schema inspection, read-only query, supplier lookup, chart rendering</li>
+              <li><b>Reasoning enabled</b> — real questions require multi-step analysis, not single lookups</li>
+              <li><b>Streamed responses</b> so the answer builds visibly as it is composed</li>
+            </ul>
+          </div>
+          <div>
+            <h4>What it unlocks</h4>
+            <ul class="tick">
+              <li><b>Follow-up thinking</b> — conversation, not one-shot search; each answer invites the next question</li>
+              <li><b>Zero training burden</b> — no query language, no filter syntax, no onboarding deck</li>
+              <li><b>A demand signal</b> — the question log becomes the roadmap for what Pillar I should show next</li>
+              <li><b>Self-service depth</b> — analyst time is freed for work that actually needs judgement</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="example">
+          <p class="q">&ldquo;Which suppliers have grown their sustainment work fastest over the last three years, and where are we absent?&rdquo;</p>
+          <p class="a">
+            The system inspects the schema, composes and runs the necessary queries, resolves supplier
+            entities to their true parent organisations, computes the growth trend, and returns a
+            narrated answer with a ranked table and a trend chart — plus the contract notices behind
+            every number, so the finding can be checked.
+          </p>
+          <span class="tagline">Illustrative interaction — not a generated result</span>
+        </div>
+
+        <p class="note">
+          Non-negotiable guardrail: the query tool runs against a read-only replica, with enforced row
+          caps and statement timeouts. The conversational layer can never reach a writable connection.
+        </p>
+      </div>
+    </div>
+
+    <!-- PILLAR 3 -->
+    <div class="pillar">
+      <div class="pillar-num">PILLAR<span>03</span></div>
+      <div class="pillar-body">
+        <h3>Deep Research &amp; Autonomous Briefings</h3>
+        <p class="pillar-tag">Commissioned investigation, and a standing intelligence rhythm</p>
+        <p>
+          The most ambitious pillar. A leader poses a genuine research brief — not a question with a
+          lookup answer, but the kind of request that would normally consume an analyst for a fortnight.
+          An AI research agent plans the work, draws on AusTender alongside other relevant public
+          sources, performs its own analysis, and produces a finished report.
+        </p>
+
+        <div class="cols-2">
+          <div>
+            <h4>On demand</h4>
+            <ul class="tick">
+              <li><b>Open-ended briefs</b> — &ldquo;Assess the competitive landscape for defence ICT sustainment and where we are structurally disadvantaged&rdquo;</li>
+              <li><b>Multi-source</b> — contract data combined with public defence strategy, industry policy and open reporting</li>
+              <li><b>Genuine analysis</b> — the agent runs its own computation and builds its own exhibits, rather than summarising</li>
+              <li><b>Real deliverables</b> — formatted documents and decks, not a wall of chat text</li>
+            </ul>
+          </div>
+          <div>
+            <h4>On a rhythm</h4>
+            <ul class="tick">
+              <li><b>A standing fortnightly briefing</b> — generated automatically on schedule</li>
+              <li><b>What changed, and why it matters</b> — new awards, notable movements, expiring windows</li>
+              <li><b>Reviewed before it reaches anyone</b> — every briefing passes a named human owner</li>
+              <li><b>Distributed to decision makers</b> once released, in a format built to be read</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout" style="margin-top:26px;">
+          <h3>The review gate is part of the design, not a limitation of it</h3>
+          <p>
+            An agent that emails unreviewed competitive analysis to senior leadership every fortnight is
+            a reputational risk that compounds quietly — errors reach the most senior audience with the
+            least context to catch them.
+          </p>
+          <p>
+            So the pipeline is deliberate: <b>the agent generates <span class="chev">&gt;</span> the briefing
+            enters a review queue <span class="chev">&gt;</span> a named owner approves
+            <span class="chev">&gt;</span> it sends.</b> The automation earns trust before it earns autonomy.
+            The gate can loosen once the output has a track record — but it is where we start.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ARCHITECTURE ============ -->
+<section class="dark">
+  <div class="wrap">
+    <p class="sec-eyebrow">Underneath the pillars</p>
+    <h2>One data spine carries all three.</h2>
+    <p class="sec-intro">
+      The pillars are three faces of a single foundation. None of them work if the spine is weak —
+      which is why the unglamorous middle step below is the one that determines whether this succeeds.
+    </p>
+
+    <div class="flow">
+      <div>
+        <span class="step">STEP 01</span>
+        <h3>Ingest</h3>
+        <p>Scheduled collection of Commonwealth contract notices, amendments and standing offers from AusTender.</p>
+      </div>
+      <div>
+        <span class="step">STEP 02</span>
+        <h3>Resolve</h3>
+        <p>The hard part. Supplier entity resolution — collapsing naming variants and subsidiaries into true parent organisations.</p>
+      </div>
+      <div>
+        <span class="step">STEP 03</span>
+        <h3>Model</h3>
+        <p>A governed warehouse with a documented schema, a business glossary, and pre-computed metric tables.</p>
+      </div>
+      <div>
+        <span class="step">STEP 04</span>
+        <h3>Serve</h3>
+        <p>One read-only interface consumed by all three pillars — dashboard, conversation and research agent alike.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:30px;max-width:74ch;color:rgba(255,255,255,.6);font-size:15px;">
+      <b style="color:#fff;">Step 02 is where this project is won or lost.</b> &ldquo;Boeing Defence Australia&rdquo;,
+      &ldquo;BOEING DEFENCE AUSTRALIA LTD&rdquo; and a subsidiary trading name are one competitor to a leader
+      and three rows to a database. Every supplier league table, every market share figure and every
+      competitive finding in all three pillars inherits the quality of this step.
+    </p>
+  </div>
+</section>
+
+<!-- ============ ROADMAP ============ -->
+<section>
+  <div class="wrap">
+    <p class="sec-eyebrow">Sequencing</p>
+    <h2>Build the spine first. Earn the automation last.</h2>
+    <p class="sec-intro">
+      The order is deliberate — each phase produces something usable, and each de-risks the next.
+      Autonomous distribution comes last, once there is enough output to judge whether it deserves trust.
+    </p>
+
+    <div class="phase">
+      <div class="phase-when">PHASE 01<small>Foundation</small></div>
+      <div>
+        <h3>The data spine</h3>
+        <p>Ingestion, supplier entity resolution, warehouse and schema. No user-facing feature ships in this
+        phase — and everything that follows depends entirely on it being done properly.</p>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-when">PHASE 02<small>Pillar I</small></div>
+      <div>
+        <h3>The dashboard</h3>
+        <p>Core views in front of a real leader as early as possible. Their reaction reshapes the roadmap
+        more usefully than any amount of internal planning.</p>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-when">PHASE 03<small>Pillar II</small></div>
+      <div>
+        <h3>Conversational analytics</h3>
+        <p>Natural language querying to a small pilot group. Every question asked is logged — that log
+        becomes the specification for the next round of dashboard views.</p>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-when">PHASE 04<small>Pillar III</small></div>
+      <div>
+        <h3>Deep research, on demand</h3>
+        <p>The research agent, commissioned manually. Output quality is assessed on real briefs before any
+        automated distribution is switched on.</p>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-when">PHASE 05<small>Pillar III</small></div>
+      <div>
+        <h3>The standing briefing</h3>
+        <p>Scheduled fortnightly generation, review queue, and distribution to decision makers — enabled
+        only once Phase 04 has demonstrated the quality bar is consistently met.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRINCIPLES ============ -->
+<section class="alt">
+  <div class="wrap">
+    <p class="sec-eyebrow">Principles</p>
+    <h2>What this platform will and will not do.</h2>
+
+    <div class="cols-2" style="margin-top:34px;">
+      <div>
+        <h4>Commitments</h4>
+        <ul class="tick">
+          <li><b>Public sources only</b> — built on the published procurement record, with provenance retained end to end</li>
+          <li><b>Traceable by default</b> — every figure can be walked back to the notices that produced it</li>
+          <li><b>Honest about gaps</b> — coverage limits and data quality caveats stated, never quietly smoothed over</li>
+          <li><b>Human in the loop</b> where output leaves the building</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Explicit non-goals</h4>
+        <ul class="tick">
+          <li><b>Not a forecasting oracle</b> — it describes the market and surfaces signals; it does not pretend to predict awards</li>
+          <li><b>Not a replacement for judgement</b> — it removes the research burden that precedes a decision, not the decision</li>
+          <li><b>Not an unattended broadcaster</b> — nothing reaches leadership without a named owner having released it</li>
+          <li><b>Not a dashboard graveyard</b> — views must earn their place or be retired</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <span class="mark">TAMBI 2026 <span class="chev">&gt;</span></span>
+      <div style="margin-top:6px;">Defence Contract Intelligence Platform</div>
+    </div>
+    <div style="text-align:right;">
+      <b>Vision document</b>
+      <div style="margin-top:6px;">Accenture Australia &nbsp;<span class="chev">&gt;</span>&nbsp; Defence &amp; National Security</div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
