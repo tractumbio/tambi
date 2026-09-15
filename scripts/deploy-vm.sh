@@ -25,11 +25,24 @@ until $SSH -o ConnectTimeout=5 "$VM_USER@$VM_IP" true 2>/dev/null; do
 done
 echo " connected."
 
-# ── 3. Run vm-setup.sh on the VM ─────────────────────────────────────────────
+# ── 3. Copy and run vm-setup.sh on the VM (repo is private, can't curl raw GitHub) ──
 echo "Running vm-setup.sh on the VM..."
-$SSH "$VM_USER@$VM_IP" "bash <(curl -fsSL https://raw.githubusercontent.com/tractumbio/tambi/dev/scripts/vm-setup.sh)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+$SCP "$SCRIPT_DIR/vm-setup.sh" "$VM_USER@$VM_IP:~/vm-setup.sh"
+$SSH "$VM_USER@$VM_IP" "chmod +x ~/vm-setup.sh && bash ~/vm-setup.sh"
 
-# ── 4. Offer to restore local Postgres data ───────────────────────────────────
+# ── 4. Copy repo to VM (private repo — can't git clone without auth) ─────────
+echo "Copying repo to VM..."
+REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+# rsync everything except gitignored/heavy dirs
+$SSH "$VM_USER@$VM_IP" "mkdir -p ~/tambi"
+rsync -az --exclude='.venv' --exclude='node_modules' --exclude='backend/data' \
+  --exclude='.git' --exclude='frontend/dist' \
+  -e "ssh -i $WSL_KEY -o StrictHostKeyChecking=no" \
+  "$REPO_DIR/" "$VM_USER@$VM_IP:~/tambi/"
+echo "Repo copied."
+
+# ── 5. Offer to restore local Postgres data ───────────────────────────────────
 echo ""
 read -rp "Restore local Postgres data to VM? (y/N): " DO_RESTORE
 if [[ "${DO_RESTORE,,}" == "y" ]]; then
