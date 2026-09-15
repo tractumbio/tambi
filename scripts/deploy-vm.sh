@@ -38,7 +38,7 @@ echo "Repo copied."
 
 # ── 4. Run vm-setup.sh on the VM ─────────────────────────────────────────────
 echo "Running vm-setup.sh on the VM..."
-$SSH "$VM_USER@$VM_IP" "chmod +x ~/vm-setup.sh && bash ~/vm-setup.sh"
+$SSH "$VM_USER@$VM_IP" "chmod +x ~/tambi/scripts/vm-setup.sh && bash ~/tambi/scripts/vm-setup.sh"
 
 # ── 5. Offer to restore local Postgres data ───────────────────────────────────
 echo ""
