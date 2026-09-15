@@ -3,7 +3,9 @@
 # Run as azureuser on the tambi-dev-vm.
 set -euo pipefail
 
-VM_IP=$(curl -sf --max-time 5 http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/publicIpAddress?api-version=2021-02-01&format=text || echo "20.70.184.250")
+VM_IP=$(curl -sf -H "Metadata:true" --max-time 5 \
+  "http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/publicIpAddress?api-version=2021-02-01&format=text" \
+  || echo "20.70.184.250")
 REPO_DIR="$HOME/tambi"
 
 echo "=== TAMBI VM Setup ==="
