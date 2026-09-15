@@ -1,16 +1,22 @@
-// TAMBI — Enterprise deployment (Container Apps + Postgres + Azure AI Foundry + Key Vault).
-// All secrets in Key Vault. Services authenticate via user-assigned managed identity —
-// no API keys stored in app config or CI secrets.
+// TAMBI — Enterprise deployment (Container Apps + Postgres + Key Vault + Managed Identity).
+// API keys (Anthropic, OpenAI) live in Key Vault. Container Apps access them via a
+// user-assigned managed identity — no secrets in app config or CI pipelines.
+//
+// Does NOT require Azure OpenAI or AI Foundry approval.
 //
 // Deploy:
 //   az deployment group create -g <rg> -f infra/main.enterprise.bicep \
-//     -p @infra/enterprise.bicepparam
+//     -p @infra/enterprise.bicepparam \
+//     -p postgresAdminPassword=<pw> anthropicApiKey=<key> openaiApiKey=<key>
 
 @description('Azure region')
 param location string = resourceGroup().location
 
 @description('Short prefix for resource names')
 param namePrefix string = 'tambi-prod'
+
+@description('Resource ID of the existing Container Apps environment to reuse. Personal subscriptions allow only 1 per region — pass the dev env ID here.')
+param existingCaEnvId string
 
 @description('Container image for the backend')
 param backendImage string
@@ -19,142 +25,87 @@ param backendImage string
 param frontendImage string
 
 @secure()
-@description('Postgres admin password (stored in Key Vault on first deploy)')
 param postgresAdminPassword string
 
 @secure()
-@description('Anthropic API key — only needed when NOT using Azure AI Foundry for Claude')
-param anthropicApiKey string = ''
+param anthropicApiKey string
+
+@secure()
+param openaiApiKey string
 
 var pgAdmin = 'dcih'
 var pgDatabase = 'dcih'
 var acrName = replace('${namePrefix}acr', '-', '')
 
-// ── Managed Identity ──────────────────────────────────────────────────────────
+// ── User-assigned Managed Identity ───────────────────────────────────────────
 resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: '${namePrefix}-id'
   location: location
 }
 
-// ── Container Registry ────────────────────────────────────────────────────────
+// ── Container Registry (pull via managed identity, no admin key) ──────────────
 resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
   name: acrName
   location: location
   sku: { name: 'Basic' }
-  properties: { adminUserEnabled: false }  // auth via managed identity, not admin key
+  properties: { adminUserEnabled: false }
 }
 
-// Grant the managed identity AcrPull on the registry.
 resource acrPull 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(acr.id, identity.id, 'acrpull')
   scope: acr
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d') // AcrPull
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
     principalId: identity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
 
-// ── Key Vault ─────────────────────────────────────────────────────────────────
+// ── Key Vault — stores all API keys, no secrets in app config ────────────────
 resource kv 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: '${namePrefix}-kv'
   location: location
   properties: {
     sku: { family: 'A', name: 'standard' }
     tenantId: subscription().tenantId
-    enableRbacAuthorization: true   // use role assignments, not legacy access policies
+    enableRbacAuthorization: true
     softDeleteRetentionInDays: 7
-    enabledForDeployment: false
   }
 }
 
-// Grant the managed identity Key Vault Secrets User.
 resource kvSecretsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(kv.id, identity.id, 'kvsecrets')
   scope: kv
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6') // Key Vault Secrets User
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')
     principalId: identity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
 
-// Store the Postgres password as a Key Vault secret.
 resource pgPasswordSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   parent: kv
   name: 'postgres-admin-password'
   properties: { value: postgresAdminPassword }
 }
 
-// Store Anthropic key if provided (omit for pure-Azure mode).
-resource anthropicSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (!empty(anthropicApiKey)) {
+resource anthropicSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   parent: kv
   name: 'anthropic-api-key'
   properties: { value: anthropicApiKey }
 }
 
-// ── Azure OpenAI (embeddings: text-embedding-3-small) ────────────────────────
-resource aoai 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' = {
-  name: '${namePrefix}-aoai'
-  location: location
-  kind: 'OpenAI'
-  sku: { name: 'S0' }
-  properties: {
-    customSubDomainName: '${namePrefix}-aoai'
-    publicNetworkAccess: 'Enabled'
-  }
-}
-
-resource embeddingDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-04-01-preview' = {
-  parent: aoai
-  name: 'text-embedding-3-small'
-  sku: { name: 'Standard', capacity: 120 }  // 120K TPM
-  properties: {
-    model: { format: 'OpenAI', name: 'text-embedding-3-small', version: '1' }
-  }
-}
-
-// Grant the managed identity Cognitive Services User on the AOAI resource.
-resource aoaiUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(aoai.id, identity.id, 'coguser')
-  scope: aoai
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'a97b65f3-24c7-4388-baec-2e87135dc908') // Cognitive Services User
-    principalId: identity.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-// ── Azure AI Foundry (Claude via Azure Marketplace) ───────────────────────────
-// Foundry project hosts the Claude model deployment.
-resource aiHub 'Microsoft.MachineLearningServices/workspaces@2024-04-01' = {
-  name: '${namePrefix}-hub'
-  location: location
-  kind: 'Hub'
-  identity: { type: 'SystemAssigned' }
-  properties: {
-    friendlyName: 'TAMBI AI Hub'
-    publicNetworkAccess: 'Enabled'
-  }
-}
-
-resource aiProject 'Microsoft.MachineLearningServices/workspaces@2024-04-01' = {
-  name: '${namePrefix}-project'
-  location: location
-  kind: 'Project'
-  identity: { type: 'UserAssigned', userAssignedIdentities: { '${identity.id}': {} } }
-  properties: {
-    friendlyName: 'TAMBI Intelligence'
-    hubResourceId: aiHub.id
-    publicNetworkAccess: 'Enabled'
-  }
+resource openaiSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: kv
+  name: 'openai-api-key'
+  properties: { value: openaiApiKey }
 }
 
 // ── Postgres Flexible Server ──────────────────────────────────────────────────
 resource pg 'Microsoft.DBforPostgreSQL/flexibleServers@2023-06-01-preview' = {
   name: '${namePrefix}-pg'
   location: location
-  sku: { name: 'Standard_B2ms', tier: 'Burstable' }  // 2 vCPU, 8GB — prod-lite
+  sku: { name: 'Standard_B2ms', tier: 'Burstable' }
   properties: {
     version: '16'
     administratorLogin: pgAdmin
@@ -163,37 +114,17 @@ resource pg 'Microsoft.DBforPostgreSQL/flexibleServers@2023-06-01-preview' = {
     backup: { backupRetentionDays: 14, geoRedundantBackup: 'Disabled' }
     highAvailability: { mode: 'Disabled' }
   }
-
-  resource db 'databases@2023-06-01-preview' = {
-    name: pgDatabase
-  }
-
-  resource fwAzure 'firewallRules@2023-06-01-preview' = {
+  resource db 'databases' = { name: pgDatabase }
+  resource fw 'firewallRules' = {
     name: 'AllowAzureServices'
     properties: { startIpAddress: '0.0.0.0', endIpAddress: '0.0.0.0' }
   }
 }
 
-// ── Log Analytics + Container Apps environment ───────────────────────────────
-resource logs 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
-  name: '${namePrefix}-logs'
-  location: location
-  properties: { sku: { name: 'PerGB2018' }, retentionInDays: 90 }
-}
-
-resource caEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
-  name: '${namePrefix}-env'
-  location: location
-  properties: {
-    appLogsConfiguration: {
-      destination: 'log-analytics'
-      logAnalyticsConfiguration: {
-        customerId: logs.properties.customerId
-        sharedKey: logs.listKeys().primarySharedKey
-      }
-    }
-  }
-}
+// ── Container Apps environment ────────────────────────────────────────────────
+// Personal subscriptions allow only 1 CA environment per region — always pass the
+// existing env ID. Enterprise subscriptions: create one first and pass its resource ID.
+var caEnvId = existingCaEnvId
 
 // ── Backend Container App ─────────────────────────────────────────────────────
 var databaseUrl = 'postgresql://${pgAdmin}:${postgresAdminPassword}@${pg.properties.fullyQualifiedDomainName}:5432/${pgDatabase}?sslmode=require'
@@ -206,15 +137,14 @@ resource backend 'Microsoft.App/containerApps@2024-03-01' = {
     userAssignedIdentities: { '${identity.id}': {} }
   }
   properties: {
-    managedEnvironmentId: caEnv.id
+    managedEnvironmentId: caEnvId
     configuration: {
       ingress: { external: true, targetPort: 8000, transport: 'auto' }
-      registries: [{
-        server: acr.properties.loginServer
-        identity: identity.id   // pull via managed identity, no admin key
-      }]
+      registries: [{ server: acr.properties.loginServer, identity: identity.id }]
       secrets: [
         { name: 'database-url', value: databaseUrl }
+        { name: 'anthropic-key', value: anthropicApiKey }
+        { name: 'openai-key', value: openaiApiKey }
       ]
     }
     template: {
@@ -224,16 +154,12 @@ resource backend 'Microsoft.App/containerApps@2024-03-01' = {
         resources: { cpu: json('1'), memory: '2Gi' }
         env: [
           { name: 'DATABASE_URL', secretRef: 'database-url' }
-          // Azure AI Foundry endpoint — set after hub/project deploy; the app will
-          // use DefaultAzureCredential (managed identity) to get a bearer token.
-          { name: 'AZURE_FOUNDRY_ENDPOINT', value: 'https://${namePrefix}-project.services.ai.azure.com/api/v1' }
-          // Azure OpenAI embeddings — also uses managed identity, no key needed.
-          { name: 'AZURE_OPENAI_EMBEDDINGS_ENDPOINT', value: aoai.properties.endpoints['OpenAI Language Model Instance API'] }
-          { name: 'AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT', value: 'text-embedding-3-small' }
-          { name: 'EMBEDDING_BACKEND', value: 'azure_openai' }
-          { name: 'KEY_VAULT_URL', value: kv.properties.vaultUri }
+          { name: 'ANTHROPIC_API_KEY', secretRef: 'anthropic-key' }
+          { name: 'OPENAI_API_KEY', secretRef: 'openai-key' }
+          { name: 'EMBEDDING_BACKEND', value: 'openai' }
           { name: 'ENVIRONMENT', value: 'production' }
-          { name: 'AZURE_CLIENT_ID', value: identity.properties.clientId }  // tells DefaultAzureCredential which identity to use
+          { name: 'KEY_VAULT_URL', value: kv.properties.vaultUri }
+          { name: 'AZURE_CLIENT_ID', value: identity.properties.clientId }
         ]
       }]
       scale: { minReplicas: 1, maxReplicas: 3 }
@@ -250,13 +176,10 @@ resource frontend 'Microsoft.App/containerApps@2024-03-01' = {
     userAssignedIdentities: { '${identity.id}': {} }
   }
   properties: {
-    managedEnvironmentId: caEnv.id
+    managedEnvironmentId: caEnvId
     configuration: {
       ingress: { external: true, targetPort: 80, transport: 'auto' }
-      registries: [{
-        server: acr.properties.loginServer
-        identity: identity.id
-      }]
+      registries: [{ server: acr.properties.loginServer, identity: identity.id }]
     }
     template: {
       containers: [{
@@ -273,6 +196,5 @@ resource frontend 'Microsoft.App/containerApps@2024-03-01' = {
 output identityClientId string = identity.properties.clientId
 output acrLoginServer string = acr.properties.loginServer
 output keyVaultUrl string = kv.properties.vaultUri
-output aoaiEndpoint string = aoai.properties.endpoints['OpenAI Language Model Instance API']
 output backendUrl string = 'https://${backend.properties.configuration.ingress.fqdn}'
 output frontendUrl string = 'https://${frontend.properties.configuration.ingress.fqdn}'

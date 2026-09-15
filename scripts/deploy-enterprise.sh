@@ -33,17 +33,29 @@ fi
 az group create -n "$RG" -l "$LOCATION" --output none
 echo "Resource group ready."
 
-# ── 2. Initial Bicep deploy (provisions ACR, Key Vault, identities, Foundry)  ─
+# ── 1b. Resolve existing Container Apps environment (personal subscriptions: 1 per region)
+DEV_RG="${DEV_RG:-tambi-dev-rg}"
+CA_ENV_ID=$(az containerapp env list -g "$DEV_RG" --query "[0].id" -o tsv 2>/dev/null || true)
+if [ -z "$CA_ENV_ID" ]; then
+  echo "ERROR: Could not find an existing Container Apps environment in $DEV_RG." >&2
+  echo "Set DEV_RG=<rg-with-env> or create a CA environment first." >&2
+  exit 1
+fi
+echo "Reusing CA environment: $CA_ENV_ID"
+
+# ── 2. Initial Bicep deploy (provisions ACR, Key Vault, identities, Postgres)  ─
 # Pass placeholder images — we'll update them after the images are built.
 echo "Deploying infrastructure..."
 DEPLOY_OUT=$(az deployment group create \
   -g "$RG" \
   -f infra/main.enterprise.bicep \
   -p namePrefix="$PREFIX" \
+  -p existingCaEnvId="$CA_ENV_ID" \
   -p backendImage="mcr.microsoft.com/azuredocs/containerapps-helloworld:latest" \
   -p frontendImage="mcr.microsoft.com/azuredocs/containerapps-helloworld:latest" \
   -p postgresAdminPassword="$PG_ADMIN_PASSWORD" \
   -p anthropicApiKey="${ANTHROPIC_API_KEY:-}" \
+  -p openaiApiKey="${OPENAI_API_KEY:-}" \
   --query properties.outputs \
   -o json)
 
@@ -75,10 +87,12 @@ az deployment group create \
   -g "$RG" \
   -f infra/main.enterprise.bicep \
   -p namePrefix="$PREFIX" \
+  -p existingCaEnvId="$CA_ENV_ID" \
   -p backendImage="$BACKEND_IMG" \
   -p frontendImage="$FRONTEND_IMG" \
   -p postgresAdminPassword="$PG_ADMIN_PASSWORD" \
   -p anthropicApiKey="${ANTHROPIC_API_KEY:-}" \
+  -p openaiApiKey="${OPENAI_API_KEY:-}" \
   --output none
 
 echo ""
