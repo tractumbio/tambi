@@ -24,7 +24,21 @@ TAG="$(git rev-parse --short HEAD)"
 BACKEND_IMG="${ACR_SERVER}/tambi-backend:${TAG}"
 FRONTEND_IMG="${ACR_SERVER}/tambi-frontend:${TAG}"
 
-az acr login -n "$ACR_NAME"
+# Robust ACR auth for CI: exchange the SP's AAD token for an ACR access token and
+# docker-login with it. Avoids the admin-cred fallback (admin is disabled) and the
+# docker-config quirks that make a bare `az acr login` flaky on hosted runners.
+# Retry to ride out AcrPush RBAC propagation delay (can take a few minutes).
+for attempt in 1 2 3 4 5 6; do
+  if ACR_TOKEN=$(az acr login -n "$ACR_NAME" --expose-token --query accessToken -o tsv 2>/dev/null) \
+     && printf '%s' "$ACR_TOKEN" | docker login "$ACR_SERVER" \
+        -u 00000000-0000-0000-0000-000000000000 --password-stdin; then
+    echo "ACR login succeeded (attempt ${attempt})."
+    break
+  fi
+  if [ "$attempt" = 6 ]; then echo "ACR login failed after 6 attempts." >&2; exit 1; fi
+  echo "ACR login attempt ${attempt} failed; retrying in 30s (RBAC propagation)..."
+  sleep 30
+done
 
 echo "Building backend image ${BACKEND_IMG}..."
 docker build -t "$BACKEND_IMG" backend/
