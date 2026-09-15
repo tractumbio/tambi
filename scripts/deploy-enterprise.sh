@@ -15,7 +15,9 @@ set -euo pipefail
 RG="${RG:-tambi-prod-rg}"
 LOCATION="${LOCATION:-australiaeast}"
 PREFIX="${PREFIX:-tambi-prod}"
-SUBSCRIPTION=$(az account show --query id -o tsv)
+# Trim whitespace: az on WSL can emit a trailing carriage return, which would
+# break the REGBOT string comparison below (it would fail open — never match).
+SUBSCRIPTION=$(az account show --query id -o tsv | tr -d '[:space:]')
 
 echo "=== TAMBI Enterprise Deploy ==="
 echo "Subscription: $SUBSCRIPTION"
@@ -23,9 +25,11 @@ echo "Resource group: $RG ($LOCATION)"
 echo "Prefix: $PREFIX"
 
 # ── Safety check: never deploy to the REGBOT subscription ────────────────────
+# Fail closed: require the expected tambi subscription, and explicitly reject REGBOT.
 REGBOT="be5c3299-5153-44b7-a1e4-d9b6d28b239c"
-if [ "$SUBSCRIPTION" = "$REGBOT" ]; then
-  echo "ERROR: Active subscription is REGBOT — aborting. Switch to the tambi account." >&2
+EXPECTED="187d1a3e-385a-4714-b7bf-da248b8fb25b"
+if [ "$SUBSCRIPTION" = "$REGBOT" ] || [ "$SUBSCRIPTION" != "$EXPECTED" ]; then
+  echo "ERROR: Active subscription is '$SUBSCRIPTION', not the expected tambi account ($EXPECTED). Aborting." >&2
   exit 1
 fi
 
