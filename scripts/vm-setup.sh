@@ -17,11 +17,10 @@ while ! command -v docker &>/dev/null; do sleep 5; done
 sudo systemctl is-active docker || sudo systemctl start docker
 echo "Docker ready."
 
-# 2. Clone repo
+# 2. Repo is rsynced here by deploy-vm.sh — just cd into it
 if [ ! -d "$REPO_DIR" ]; then
-  git clone https://github.com/tractumbio/tambi.git --branch dev "$REPO_DIR"
-else
-  cd "$REPO_DIR" && git pull
+  echo "ERROR: $REPO_DIR not found. Run deploy-vm.sh to copy the repo first." >&2
+  exit 1
 fi
 cd "$REPO_DIR"
 

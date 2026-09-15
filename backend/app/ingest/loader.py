@@ -69,12 +69,13 @@ class Loader:
     (competitor groups, themes) are loaded once.
     """
 
-    def __init__(self, session: Session, *, defence_only: bool = True) -> None:
+    def __init__(self, session: Session, *, defence_only: bool = False) -> None:
         self._session = session
-        # When True, non-Defence releases are filtered out before any Postgres write, so
-        # the database (raw_releases and the analytics tables alike) holds only the
-        # Defence portfolio. The complete AusTender response is still archived on disk in
-        # data/raw for audit/reprocessing. See spec Section 7.1 for the is_defence rules.
+        # Default False: every release is stored and tagged via the ``is_defence`` flag,
+        # so the warehouse holds the full portfolio and Defence analytics stay clean by
+        # filtering on ``is_defence`` (non-Defence rows are kept, not discarded).
+        # When True, non-Defence releases are filtered out before any Postgres write so
+        # only the Defence portfolio lands. See spec Section 7.1 for the is_defence rules.
         self._defence_only = defence_only
         self._by_abn: dict[str, int] = {}
         self._by_name: dict[str, int] = {}  # only for orgs without an ABN

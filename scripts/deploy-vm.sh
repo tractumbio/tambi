@@ -25,11 +25,22 @@ until $SSH -o ConnectTimeout=5 "$VM_USER@$VM_IP" true 2>/dev/null; do
 done
 echo " connected."
 
-# ── 3. Run vm-setup.sh on the VM ─────────────────────────────────────────────
-echo "Running vm-setup.sh on the VM..."
-$SSH "$VM_USER@$VM_IP" "bash <(curl -fsSL https://raw.githubusercontent.com/tractumbio/tambi/dev/scripts/vm-setup.sh)"
+# ── 3. Rsync repo to VM first (private repo — can't git clone without auth) ──
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+echo "Copying repo to VM..."
+$SSH "$VM_USER@$VM_IP" "mkdir -p ~/tambi"
+rsync -az --exclude='.venv' --exclude='node_modules' --exclude='backend/data' \
+  --exclude='.git' --exclude='frontend/dist' \
+  -e "ssh -i $WSL_KEY -o StrictHostKeyChecking=no" \
+  "$REPO_DIR/" "$VM_USER@$VM_IP:~/tambi/"
+echo "Repo copied."
 
-# ── 4. Offer to restore local Postgres data ───────────────────────────────────
+# ── 4. Run vm-setup.sh on the VM ─────────────────────────────────────────────
+echo "Running vm-setup.sh on the VM..."
+$SSH "$VM_USER@$VM_IP" "chmod +x ~/tambi/scripts/vm-setup.sh && bash ~/tambi/scripts/vm-setup.sh"
+
+# ── 5. Offer to restore local Postgres data ───────────────────────────────────
 echo ""
 read -rp "Restore local Postgres data to VM? (y/N): " DO_RESTORE
 if [[ "${DO_RESTORE,,}" == "y" ]]; then

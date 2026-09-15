@@ -91,3 +91,31 @@ def test_buyer_org_unit_extracted(parsed: list[ParsedContract]) -> None:
 )
 def test_normalise_name(raw: str | None, expected: str) -> None:
     assert normalise_name(raw) == expected
+
+
+def _release_with_period(start: str, end: str) -> dict:
+    return {
+        "ocid": "ocds-abc-CN123",
+        "id": "CN123-1",
+        "date": "2024-01-01T00:00:00Z",
+        "contracts": [{"id": "CN123", "period": {"startDate": start, "endDate": end}}],
+    }
+
+
+@pytest.mark.parametrize("junk", ["0899-12-28T00:00:00Z", "1900-01-01T00:00:00Z"])
+def test_junk_dates_sanitised_to_none(junk: str) -> None:
+    # AusTender emits placeholder/corrupt dates — year 0899 and the "1900-01-01"
+    # null-sentinel (the bulk of them). Anything below 1990 is treated as missing.
+    parsed = parse_release(_release_with_period(junk, junk))
+    assert parsed is not None
+    assert parsed.period_start is None
+    assert parsed.period_end is None
+
+
+def test_valid_period_dates_kept() -> None:
+    parsed = parse_release(
+        _release_with_period("2020-07-01T00:00:00Z", "2025-06-30T00:00:00Z")
+    )
+    assert parsed is not None
+    assert parsed.period_start is not None and parsed.period_start.year == 2020
+    assert parsed.period_end is not None and parsed.period_end.year == 2025

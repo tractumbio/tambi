@@ -24,6 +24,13 @@ from typing import Any
 ABN_SCHEME = "AU-ABN"
 UNSPSC_SCHEME = "UNSPSC"
 
+# Sanity bounds for parsed dates. The AusTender feed carries junk sentinels
+# (e.g. period end in year 0899) that must not reach the warehouse — anything
+# outside this window is treated as missing. 2100 leaves genuine "open-ended"
+# far-future end dates intact while rejecting clearly-corrupt values.
+_MIN_YEAR = 1990
+_MAX_YEAR = 2100
+
 # Company suffixes / tokens stripped when normalising a name for dedup.
 _SUFFIX_TOKENS = {
     "pty", "ltd", "limited", "proprietary", "inc", "incorporated", "llc", "llp",
@@ -113,7 +120,10 @@ def _parse_datetime(value: Any) -> datetime | None:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError:
         return None
-    return parsed.astimezone(UTC) if parsed.tzinfo else parsed.replace(tzinfo=UTC)
+    result = parsed.astimezone(UTC) if parsed.tzinfo else parsed.replace(tzinfo=UTC)
+    if not (_MIN_YEAR <= result.year <= _MAX_YEAR):
+        return None
+    return result
 
 
 def _parse_date(value: Any) -> date | None:
