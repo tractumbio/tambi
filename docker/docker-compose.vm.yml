@@ -1,0 +1,22 @@
+# VM deployment overrides — used with: docker compose -f docker-compose.yml -f docker-compose.vm.yml up -d
+# Sets public IP for API calls, maps frontend to port 80, always starts Postgres.
+
+services:
+  backend:
+    restart: unless-stopped
+
+  frontend:
+    build:
+      args:
+        VITE_API_BASE_URL: "${VITE_API_BASE_URL:-http://20.70.184.250:8000/api/v1}"
+    ports:
+      - "80:80"
+    restart: unless-stopped
+
+  postgres:
+    profiles: []          # remove profile gating so it always starts
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB:-dcih}"
+      POSTGRES_USER: "${POSTGRES_USER:-dcih}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-dcih_local_dev_only}"
