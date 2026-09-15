@@ -21,11 +21,14 @@ az group create -n "$RG" -l "$LOCATION" -o none
 az acr create -n "$ACR" -g "$RG" --sku Basic --admin-enabled true -o none 2>/dev/null || true
 ACR_SERVER="$(az acr show -n "$ACR" -g "$RG" --query loginServer -o tsv)"
 
-echo "==> Build backend image in ACR"
-az acr build -r "$ACR" -t "tambi-backend:$TAG" ./backend -o none
+echo "==> Login to ACR"
+az acr login -n "$ACR" -o none
 
-echo "==> First deploy (backend) to learn its public URL"
-# Placeholder frontend image for the first pass (backend image is the real one).
+echo "==> Build + push backend image"
+docker build -t "$ACR_SERVER/tambi-backend:$TAG" ./backend
+docker push "$ACR_SERVER/tambi-backend:$TAG"
+
+echo "==> First deploy (backend only) to learn its public URL"
 az deployment group create -g "$RG" -f infra/main.bicep -o none \
   -p namePrefix="$PREFIX" \
      backendImage="$ACR_SERVER/tambi-backend:$TAG" \
@@ -36,9 +39,11 @@ az deployment group create -g "$RG" -f infra/main.bicep -o none \
 
 BACKEND_URL="$(az containerapp show -n "${PREFIX}-backend" -g "$RG" --query properties.configuration.ingress.fqdn -o tsv)"
 
-echo "==> Build frontend image pointing at https://$BACKEND_URL/api/v1"
-az acr build -r "$ACR" -t "tambi-frontend:$TAG" \
-  --build-arg VITE_API_BASE_URL="https://$BACKEND_URL/api/v1" ./frontend -o none
+echo "==> Build + push frontend image pointing at https://$BACKEND_URL/api/v1"
+docker build \
+  --build-arg VITE_API_BASE_URL="https://$BACKEND_URL/api/v1" \
+  -t "$ACR_SERVER/tambi-frontend:$TAG" ./frontend
+docker push "$ACR_SERVER/tambi-frontend:$TAG"
 
 echo "==> Final deploy (both images)"
 az deployment group create -g "$RG" -f infra/main.bicep -o none \
