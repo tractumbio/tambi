@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Enterprise deployment: Container Apps + Azure AI Foundry + Azure OpenAI + Key Vault.
-# All services authenticate via managed identity — no API keys in app config.
+# Enterprise deployment: Container Apps + Postgres + Azure OpenAI (embeddings) + Key Vault.
+# Embeddings run on Azure OpenAI via managed identity (no key). Claude runs on the
+# Anthropic API with the key stored in Key Vault and surfaced to the backend as a
+# Container Apps Key Vault secret reference — never in app config or CI.
 #
 # Prerequisites:
 #   az login (the account must own or have Contributor on the target subscription)
@@ -8,7 +10,7 @@
 #
 # Usage:
 #   export PG_ADMIN_PASSWORD='<strong-password>'
-#   export ANTHROPIC_API_KEY='sk-ant-...'   # optional if using Foundry for Claude
+#   export ANTHROPIC_API_KEY='sk-ant-...'   # stored in Key Vault on first deploy
 #   RG=tambi-prod-rg LOCATION=australiaeast ./scripts/deploy-enterprise.sh
 set -euo pipefail
 
@@ -59,7 +61,6 @@ DEPLOY_OUT=$(az deployment group create \
   -p frontendImage="mcr.microsoft.com/azuredocs/containerapps-helloworld:latest" \
   -p postgresAdminPassword="$PG_ADMIN_PASSWORD" \
   -p anthropicApiKey="${ANTHROPIC_API_KEY:-}" \
-  -p openaiApiKey="${OPENAI_API_KEY:-}" \
   --query properties.outputs \
   -o json)
 
@@ -96,7 +97,6 @@ az deployment group create \
   -p frontendImage="$FRONTEND_IMG" \
   -p postgresAdminPassword="$PG_ADMIN_PASSWORD" \
   -p anthropicApiKey="${ANTHROPIC_API_KEY:-}" \
-  -p openaiApiKey="${OPENAI_API_KEY:-}" \
   --output none
 
 echo ""

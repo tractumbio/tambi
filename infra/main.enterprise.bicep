@@ -1,13 +1,15 @@
 // TAMBI — Enterprise deployment (Container Apps + Postgres + Key Vault + Managed Identity).
-// API keys (Anthropic, OpenAI) live in Key Vault. Container Apps access them via a
-// user-assigned managed identity — no secrets in app config or CI pipelines.
-//
-// Does NOT require Azure OpenAI or AI Foundry approval.
+// Hybrid model backend:
+//   - Embeddings run on Azure OpenAI (text-embedding-3-small) via managed identity — no key.
+//   - Claude runs on the Anthropic API; the key lives in Key Vault and reaches the backend
+//     as a Container Apps Key Vault secret reference (resolved by managed identity), so the
+//     key value is never stored in app config, Bicep, or CI.
+//     (Claude has no Azure quota on this subscription, so it stays on the Anthropic API.)
 //
 // Deploy:
 //   az deployment group create -g <rg> -f infra/main.enterprise.bicep \
 //     -p @infra/enterprise.bicepparam \
-//     -p postgresAdminPassword=<pw> anthropicApiKey=<key> openaiApiKey=<key>
+//     -p postgresAdminPassword=<pw> anthropicApiKey=<key>
 
 @description('Azure region')
 param location string = resourceGroup().location
@@ -29,9 +31,6 @@ param postgresAdminPassword string
 
 @secure()
 param anthropicApiKey string
-
-@secure()
-param openaiApiKey string
 
 var pgAdmin = 'dcih'
 var pgDatabase = 'dcih'
@@ -95,12 +94,6 @@ resource anthropicSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   properties: { value: anthropicApiKey }
 }
 
-resource openaiSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
-  parent: kv
-  name: 'openai-api-key'
-  properties: { value: openaiApiKey }
-}
-
 // ── Postgres Flexible Server ──────────────────────────────────────────────────
 resource pg 'Microsoft.DBforPostgreSQL/flexibleServers@2023-06-01-preview' = {
   name: '${namePrefix}-pg'
@@ -118,6 +111,39 @@ resource pg 'Microsoft.DBforPostgreSQL/flexibleServers@2023-06-01-preview' = {
   resource fw 'firewallRules' = {
     name: 'AllowAzureServices'
     properties: { startIpAddress: '0.0.0.0', endIpAddress: '0.0.0.0' }
+  }
+}
+
+// ── Azure OpenAI (embeddings only — Claude stays on the Anthropic API) ─────────
+resource openai 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
+  name: '${namePrefix}-oai'
+  location: location
+  kind: 'OpenAI'
+  sku: { name: 'S0' }
+  properties: {
+    customSubDomainName: '${namePrefix}-oai'
+    publicNetworkAccess: 'Enabled'
+    disableLocalAuth: true
+  }
+}
+
+resource embedDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
+  parent: openai
+  name: 'text-embedding-3-small'
+  sku: { name: 'Standard', capacity: 50 }
+  properties: {
+    model: { format: 'OpenAI', name: 'text-embedding-3-small', version: '1' }
+  }
+}
+
+// Managed identity → Cognitive Services OpenAI User (call the embeddings endpoint, no key).
+resource openaiUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(openai.id, identity.id, 'openaiuser')
+  scope: openai
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd')
+    principalId: identity.properties.principalId
+    principalType: 'ServicePrincipal'
   }
 }
 
@@ -143,8 +169,12 @@ resource backend 'Microsoft.App/containerApps@2024-03-01' = {
       registries: [{ server: acr.properties.loginServer, identity: identity.id }]
       secrets: [
         { name: 'database-url', value: databaseUrl }
-        { name: 'anthropic-key', value: anthropicApiKey }
-        { name: 'openai-key', value: openaiApiKey }
+        // Anthropic key resolved from Key Vault by the managed identity — value never in config.
+        {
+          name: 'anthropic-key'
+          keyVaultUrl: '${kv.properties.vaultUri}secrets/anthropic-api-key'
+          identity: identity.id
+        }
       ]
     }
     template: {
@@ -155,8 +185,9 @@ resource backend 'Microsoft.App/containerApps@2024-03-01' = {
         env: [
           { name: 'DATABASE_URL', secretRef: 'database-url' }
           { name: 'ANTHROPIC_API_KEY', secretRef: 'anthropic-key' }
-          { name: 'OPENAI_API_KEY', secretRef: 'openai-key' }
-          { name: 'EMBEDDING_BACKEND', value: 'openai' }
+          { name: 'EMBEDDING_BACKEND', value: 'azure_openai' }
+          { name: 'AZURE_OPENAI_EMBEDDINGS_ENDPOINT', value: openai.properties.endpoint }
+          { name: 'AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT', value: 'text-embedding-3-small' }
           { name: 'ENVIRONMENT', value: 'production' }
           { name: 'KEY_VAULT_URL', value: kv.properties.vaultUri }
           { name: 'AZURE_CLIENT_ID', value: identity.properties.clientId }
@@ -165,6 +196,7 @@ resource backend 'Microsoft.App/containerApps@2024-03-01' = {
       scale: { minReplicas: 1, maxReplicas: 3 }
     }
   }
+  dependsOn: [kvSecretsUser, openaiUser, embedDeployment]
 }
 
 // ── Frontend Container App ────────────────────────────────────────────────────
@@ -196,5 +228,6 @@ resource frontend 'Microsoft.App/containerApps@2024-03-01' = {
 output identityClientId string = identity.properties.clientId
 output acrLoginServer string = acr.properties.loginServer
 output keyVaultUrl string = kv.properties.vaultUri
+output openaiEndpoint string = openai.properties.endpoint
 output backendUrl string = 'https://${backend.properties.configuration.ingress.fqdn}'
 output frontendUrl string = 'https://${frontend.properties.configuration.ingress.fqdn}'
