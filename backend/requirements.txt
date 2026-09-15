@@ -14,6 +14,10 @@ PyYAML==6.0.3              # theme / competitor / service-offering rule files
 #   voyageai>=0.3            # embedding_backend=voyage
 #   sentence-transformers    # embedding_backend=local (pulls torch — large)
 
+# Optional: Azure enterprise path (managed identity, Key Vault, Azure OpenAI, Foundry).
+# Install when AZURE_FOUNDRY_ENDPOINT or AZURE_OPENAI_EMBEDDINGS_ENDPOINT is set.
+#   azure-identity>=1.17,<2   # DefaultAzureCredential for managed identity auth
+
 # --- Database (production) ---
 sqlalchemy>=2.0.43,<2.1   # >=2.0.43 for Python 3.14 typing compatibility
 alembic==1.13.2

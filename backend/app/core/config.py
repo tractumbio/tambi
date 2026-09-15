@@ -65,13 +65,26 @@ class Settings(BaseSettings):
     doc_chunk_target_tokens: int = 600
     doc_retrieval_max_chunks: int = 12
 
-    # Capability-match embeddings. Backend: "openai" (needs OPENAI_API_KEY) |
-    # "local" (sentence-transformers, no key) | "voyage" (needs key) | "none" (TF-IDF).
-    embedding_backend: Literal["openai", "local", "voyage", "none"] = "openai"
+    # Capability-match embeddings. Backend: "openai" | "azure_openai" | "local" | "voyage" | "none".
+    embedding_backend: Literal["openai", "azure_openai", "local", "voyage", "none"] = "openai"
     openai_embedding_model: str = "text-embedding-3-small"
     local_embedding_model: str = "BAAI/bge-small-en-v1.5"
     voyage_api_key: str | None = None
     voyage_model: str = "voyage-3"
+
+    # --- Azure AI Foundry (enterprise LLM path) ---
+    # Set AZURE_FOUNDRY_ENDPOINT to route all Claude calls through Azure AI Foundry.
+    # Leave unset to use the direct Anthropic API (dev/VM mode).
+    azure_foundry_endpoint: str | None = None
+    # API key auth (intermediate). Omit to use managed identity (DefaultAzureCredential).
+    azure_foundry_api_key: str | None = None
+    # Azure OpenAI resource for embeddings (enterprise). Separate from Foundry endpoint.
+    azure_openai_embeddings_endpoint: str | None = None
+    azure_openai_embeddings_key: str | None = None     # omit → managed identity
+    azure_openai_embeddings_deployment: str = "text-embedding-3-small"
+
+    # --- Key Vault (enterprise secrets) ---
+    key_vault_url: str | None = None   # e.g. https://tambi-prod-kv.vault.azure.net/
 
     ai_provider: Literal["ollama", "openai", "azure_openai"] = "ollama"
     ollama_base_url: str = "http://localhost:11434"

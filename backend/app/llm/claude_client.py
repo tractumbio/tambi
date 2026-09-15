@@ -9,6 +9,35 @@ import anthropic
 from app.core.config import get_settings
 
 
+def get_anthropic_client() -> anthropic.Anthropic:
+    """Return an Anthropic client pointed at the right backend.
+
+    - Direct Anthropic (dev/VM): ANTHROPIC_API_KEY set, AZURE_FOUNDRY_ENDPOINT absent.
+    - Azure AI Foundry + API key: both AZURE_FOUNDRY_ENDPOINT and AZURE_FOUNDRY_API_KEY set.
+    - Azure AI Foundry + managed identity: AZURE_FOUNDRY_ENDPOINT set, no key — uses
+      DefaultAzureCredential (works inside Container Apps with a user-assigned identity).
+    """
+    s = get_settings()
+    if s.azure_foundry_endpoint:
+        if s.azure_foundry_api_key:
+            return anthropic.Anthropic(
+                base_url=s.azure_foundry_endpoint,
+                api_key=s.azure_foundry_api_key,
+            )
+        # Managed identity path — get a short-lived bearer token from the Azure runtime.
+        from azure.identity import DefaultAzureCredential
+        token = DefaultAzureCredential().get_token(
+            "https://cognitiveservices.azure.com/.default"
+        )
+        return anthropic.Anthropic(
+            base_url=s.azure_foundry_endpoint,
+            api_key=token.token,
+        )
+    if not s.anthropic_api_key:
+        raise RuntimeError("ANTHROPIC_API_KEY not configured")
+    return anthropic.Anthropic(api_key=s.anthropic_api_key)
+
+
 def analyse_atm(
     *,
     atm_title: str | None,
@@ -27,11 +56,7 @@ def analyse_atm(
 
     Returns a dict matching the AiScoreResult schema.
     """
-    settings = get_settings()
-    if not settings.anthropic_api_key:
-        raise RuntimeError("ANTHROPIC_API_KEY not configured")
-
-    client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+    client = get_anthropic_client()
 
     capability_lines = []
     if accenture_offering_profile:

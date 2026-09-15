@@ -52,12 +52,8 @@ def default_period(today: date | None = None) -> tuple[date, date]:
 
 
 def _client():
-    import anthropic
-
-    settings = get_settings()
-    if not settings.anthropic_api_key:
-        raise RuntimeError("ANTHROPIC_API_KEY not configured")
-    return anthropic.Anthropic(api_key=settings.anthropic_api_key)
+    from app.llm.claude_client import get_anthropic_client
+    return get_anthropic_client()
 
 
 def _m(v: float) -> str:
