@@ -6,6 +6,7 @@ import {
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import CodeIcon from "@mui/icons-material/Code";
 import { askMarket, AskResponse } from "../api/ask";
+import { VisualStudio } from "../components/VisualStudio";
 
 const EXAMPLE_QUESTIONS = [
   "Which 5 firms have won the most Defence contract value?",
@@ -65,7 +66,7 @@ function SqlDetails({ result }: { result: AskResponse }) {
   );
 }
 
-export function ConversePage() {
+function AskPanel() {
   const [input, setInput] = useState("");
   const [exchanges, setExchanges] = useState<Exchange[]>([]);
 
@@ -87,18 +88,18 @@ export function ConversePage() {
   };
 
   return (
-    <Box>
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
       {/* Header */}
-      <Box sx={{ mb: 3 }}>
+      <Box sx={{ mb: 2 }}>
         <Typography variant="overline" sx={{ color: "#A100FF", fontSize: 11 }}>Query the Data</Typography>
-        <Typography variant="h5" sx={{ fontWeight: 800 }}>Ask the Market</Typography>
-        <Typography sx={{ color: "#6E6E6E", mt: 0.5, maxWidth: "68ch", fontSize: 15 }}>
-          Ask in plain English. The system writes a safe, read-only SQL query against the Defence contract warehouse and returns a narrated answer with sources — in seconds, not days.
+        <Typography variant="h6" sx={{ fontWeight: 800, fontSize: 17 }}>Ask the Market</Typography>
+        <Typography sx={{ color: "#6E6E6E", mt: 0.25, fontSize: 13 }}>
+          Natural language → safe SQL → narrated answer with contract sources.
         </Typography>
       </Box>
 
       {/* Input */}
-      <Card elevation={0} sx={{ border: "1px solid #A100FF", mb: 3 }}>
+      <Card elevation={0} sx={{ border: "1px solid #A100FF", mb: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", px: 2, py: 1 }}>
           <InputBase
             fullWidth
@@ -107,7 +108,7 @@ export function ConversePage() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && submit(input)}
             disabled={anyLoading}
-            sx={{ fontSize: 15, "& input": { py: 1 } }}
+            sx={{ fontSize: 14, "& input": { py: 1 } }}
           />
           <IconButton onClick={() => submit(input)} disabled={!input.trim() || anyLoading} sx={{ color: "#A100FF" }}>
             {anyLoading ? <CircularProgress size={20} sx={{ color: "#A100FF" }} /> : <ArrowForwardIcon />}
@@ -115,7 +116,7 @@ export function ConversePage() {
         </Box>
       </Card>
 
-      {/* Example questions (only before first ask) */}
+      {/* Example questions */}
       {exchanges.length === 0 && (
         <Box>
           <Typography sx={{ fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: "#6E6E6E", mb: 1.5 }}>
@@ -123,16 +124,11 @@ export function ConversePage() {
           </Typography>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {EXAMPLE_QUESTIONS.map((q) => (
-              <Box
-                key={q}
-                onClick={() => submit(q)}
-                sx={{
-                  px: 2, py: 1.5, border: "1px solid #E4E4E4", borderRadius: 1,
-                  cursor: "pointer", fontSize: 14, color: "#3C3C3C",
+              <Box key={q} onClick={() => submit(q)}
+                sx={{ px: 2, py: 1.25, border: "1px solid #E4E4E4", borderRadius: 1, cursor: "pointer",
+                  fontSize: 13, color: "#3C3C3C",
                   "&:hover": { borderColor: "#A100FF", color: "#A100FF", bgcolor: "rgba(161,0,255,.03)" },
-                  transition: "all .15s",
-                }}
-              >
+                  transition: "all .15s" }}>
                 {q}
               </Box>
             ))}
@@ -144,14 +140,11 @@ export function ConversePage() {
       <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
         {exchanges.map((ex, i) => (
           <Box key={i}>
-            {/* Question echo */}
             <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
               <Box sx={{ bgcolor: "#A100FF", color: "#fff", px: 2.5, py: 1.5, borderRadius: 2, maxWidth: "80%", fontSize: 14, fontWeight: 500 }}>
                 {ex.question}
               </Box>
             </Box>
-
-            {/* Answer */}
             <Card elevation={0} sx={{ border: "1px solid #E4E4E4" }}>
               <CardContent>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
@@ -160,26 +153,18 @@ export function ConversePage() {
                     TAMBI · Analysis
                   </Typography>
                 </Box>
-
                 {ex.loading && (
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, py: 1 }}>
                     <CircularProgress size={16} sx={{ color: "#A100FF" }} />
                     <Typography sx={{ fontSize: 14, color: "#6E6E6E" }}>Writing a query and analysing the warehouse…</Typography>
                   </Box>
                 )}
-
-                {ex.error && (
-                  <Typography sx={{ fontSize: 14, color: "#C62828" }}>{ex.error}</Typography>
-                )}
-
+                {ex.error && <Typography sx={{ fontSize: 14, color: "#C62828" }}>{ex.error}</Typography>}
                 {ex.result && (
                   <>
                     {ex.result.answer.split("\n\n").map((para, j) => (
-                      <Typography key={j} sx={{ fontSize: 14.5, lineHeight: 1.7, color: "#3C3C3C", mb: 1.5, whiteSpace: "pre-line" }}>
-                        {para}
-                      </Typography>
+                      <Typography key={j} sx={{ fontSize: 14.5, lineHeight: 1.7, color: "#3C3C3C", mb: 1.5, whiteSpace: "pre-line" }}>{para}</Typography>
                     ))}
-
                     {ex.result.sources.length > 0 && (
                       <>
                         <Divider sx={{ my: 2 }} />
@@ -191,7 +176,6 @@ export function ConversePage() {
                         </Box>
                       </>
                     )}
-
                     <SqlDetails result={ex.result} />
                   </>
                 )}
@@ -199,6 +183,37 @@ export function ConversePage() {
             </Card>
           </Box>
         ))}
+      </Box>
+    </Box>
+  );
+}
+
+export function ConversePage() {
+  return (
+    <Box>
+      {/* Page header */}
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="overline" sx={{ color: "#A100FF", fontSize: 11 }}>Pillar II</Typography>
+        <Typography variant="h5" sx={{ fontWeight: 800 }}>Ask & Visualise</Typography>
+        <Typography sx={{ color: "#6E6E6E", mt: 0.5, maxWidth: "68ch", fontSize: 15 }}>
+          Ask the warehouse in plain English, or describe any chart and let AI fetch the data and render it — instantly.
+        </Typography>
+      </Box>
+
+      {/* Two-column split */}
+      <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr", gap: 0, minHeight: 600 }}>
+        {/* Left — Ask */}
+        <Box sx={{ pr: 3 }}>
+          <AskPanel />
+        </Box>
+
+        {/* Divider */}
+        <Box sx={{ bgcolor: "#E5E7EB" }} />
+
+        {/* Right — Visual Studio */}
+        <Box sx={{ pl: 3 }}>
+          <VisualStudio />
+        </Box>
       </Box>
     </Box>
   );

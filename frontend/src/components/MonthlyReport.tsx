@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  Box, Button, Card, CardContent, Chip, CircularProgress, LinearProgress, Link,
-  MenuItem, Select, TextField, Typography,
+  Box, Button, Card, CardContent, Chip, CircularProgress, Dialog, DialogContent,
+  DialogTitle, IconButton, LinearProgress, Link, MenuItem, Select, TextField, Typography,
 } from "@mui/material";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import CloseIcon from "@mui/icons-material/Close";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
@@ -13,7 +14,7 @@ import CloudSyncIcon from "@mui/icons-material/CloudSync";
 import {
   generateReport, getDefaultStructure, getReport, listReports, getCoverage,
   listDomains, addDomain, removeDomain, triggerHarvest,
-  type MonthlyReportOut, type MonthlyReportSummary, type MovementSection, type NewsDomain,
+  type MonthlyReportOut, type MonthlyReportSummary, type MovementItem, type MovementSection, type NewsDomain,
   type Coverage,
 } from "../api/monthlyReports";
 import { formatAud, formatDate } from "../lib/format";
@@ -46,12 +47,58 @@ function Label({ children, mt = 3 }: { children: React.ReactNode; mt?: number })
   return <Typography sx={{ ...LABEL_SX, mb: 1, mt }}>{children}</Typography>;
 }
 
+// ── contract detail dialog ───────────────────────────────────────────────────
+function ContractDialog({ item, onClose }: { item: MovementItem; onClose: () => void }) {
+  const dur = item.date_published && item.period_end
+    ? Math.round((new Date(item.period_end).getTime() - new Date(item.date_published).getTime()) / (1000 * 60 * 60 * 24 * 30))
+    : null;
+  return (
+    <Dialog open onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", pr: 1 }}>
+        <Box sx={{ pr: 2 }}>
+          <Typography sx={{ fontSize: 10, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: ACCENTURE_COLOR, mb: 0.5 }}>
+            Contract Detail
+          </Typography>
+          <Typography sx={{ fontSize: 15, fontWeight: 700, lineHeight: 1.35 }}>
+            {item.title || item.cn_id || "Unnamed contract"}
+          </Typography>
+        </Box>
+        <IconButton size="small" onClick={onClose} sx={{ mt: -0.5, flexShrink: 0 }}><CloseIcon sx={{ fontSize: 18 }} /></IconButton>
+      </DialogTitle>
+      <DialogContent sx={{ pt: 0 }}>
+        {[
+          ["Agency", item.agency],
+          ["Supplier / Firm", item.supplier],
+          ["Competitor group", item.competitor_label],
+          ["CN ID", item.cn_id],
+          ["Value", item.value != null ? formatAud(item.value) : null],
+          ["Start", item.date_published ? formatDate(item.date_published) : null],
+          ["Expiry", item.period_end ? formatDate(item.period_end) : null],
+          ["Duration", dur != null ? `${dur} months` : null],
+        ].filter(([, v]) => v).map(([label, value]) => (
+          <Box key={label as string} sx={{ display: "flex", gap: 2, py: 0.75, borderBottom: "1px solid #F3F4F6" }}>
+            <Typography sx={{ fontSize: 12, color: INK_MUTED, width: 130, flexShrink: 0 }}>{label}</Typography>
+            <Typography sx={{ fontSize: 13, fontWeight: 500 }}>{value}</Typography>
+          </Box>
+        ))}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ── movement table (new awards / amendments / expiries) ─────────────────────────
 function MovementTable({ section, kind }: { section: MovementSection; kind: string }) {
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [openContract, setOpenContract] = useState<MovementItem | null>(null);
+
   if (!section || section.total_count === 0) {
     return <Typography sx={{ fontSize: 13, color: INK_MUTED, mt: 0.5 }}>No {kind} in this period.</Typography>;
   }
   const named = section.by_competitor.filter((c) => c.slug !== "other").slice(0, 6);
+  const visible = selectedSlug
+    ? section.notable.filter((n) => n.competitor_slug === selectedSlug)
+    : section.notable.slice(0, 6);
+
   return (
     <Box sx={{ mt: 1 }}>
       <Box sx={{ display: "flex", gap: 3, mb: 1.5, flexWrap: "wrap" }}>
@@ -63,16 +110,43 @@ function MovementTable({ section, kind }: { section: MovementSection; kind: stri
       {named.length > 0 && (
         <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap", mb: 1.5 }}>
           {named.map((c) => (
-            <Chip key={c.slug} size="small" label={`${c.label} · ${formatAud(c.value)}`}
-              sx={{ fontSize: 11, bgcolor: `${competitorColor(c.slug)}18`, color: "#374151",
-                borderLeft: `3px solid ${competitorColor(c.slug)}`, borderRadius: "4px" }} />
+            <Chip
+              key={c.slug}
+              size="small"
+              label={`${c.label} · ${formatAud(c.value)} (${c.count})`}
+              onClick={() => setSelectedSlug((prev) => prev === c.slug ? null : c.slug)}
+              sx={{
+                fontSize: 11, cursor: "pointer",
+                bgcolor: selectedSlug === c.slug ? `${competitorColor(c.slug)}30` : `${competitorColor(c.slug)}18`,
+                color: "#374151",
+                borderLeft: `3px solid ${competitorColor(c.slug)}`,
+                borderRadius: "4px",
+                outline: selectedSlug === c.slug ? `2px solid ${competitorColor(c.slug)}` : "none",
+                "&:hover": { bgcolor: `${competitorColor(c.slug)}28` },
+              }}
+            />
           ))}
         </Box>
       )}
+      {selectedSlug && (
+        <Typography sx={{ fontSize: 11, color: INK_MUTED, mb: 0.75 }}>
+          Showing {visible.length} contract{visible.length !== 1 ? "s" : ""} for {named.find((c) => c.slug === selectedSlug)?.label ?? selectedSlug} — <Box component="span" onClick={() => setSelectedSlug(null)} sx={{ cursor: "pointer", color: ACCENTURE_COLOR }}>clear filter</Box>
+        </Typography>
+      )}
       <Box sx={{ ...CARD_SX, overflow: "hidden" }}>
-        {section.notable.slice(0, 6).map((n, i) => (
-          <Box key={i} sx={{ display: "flex", justifyContent: "space-between", gap: 2, px: 1.5, py: 1,
-            borderBottom: i < 5 ? `1px solid ${CARD_BORDER}` : 0, alignItems: "center" }}>
+        {visible.length === 0 ? (
+          <Typography sx={{ fontSize: 13, color: INK_MUTED, px: 1.5, py: 1 }}>No notable contracts for this firm.</Typography>
+        ) : visible.map((n, i) => (
+          <Box
+            key={i}
+            onClick={() => setOpenContract(n)}
+            sx={{
+              display: "flex", justifyContent: "space-between", gap: 2, px: 1.5, py: 1,
+              borderBottom: i < visible.length - 1 ? `1px solid ${CARD_BORDER}` : 0,
+              alignItems: "center", cursor: "pointer",
+              "&:hover": { bgcolor: "#FAF5FF" }, transition: "background .12s",
+            }}
+          >
             <Box sx={{ minWidth: 0 }}>
               <Typography sx={{ fontSize: 12.5, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {n.title || n.cn_id || "—"}
@@ -85,6 +159,7 @@ function MovementTable({ section, kind }: { section: MovementSection; kind: stri
           </Box>
         ))}
       </Box>
+      {openContract && <ContractDialog item={openContract} onClose={() => setOpenContract(null)} />}
     </Box>
   );
 }

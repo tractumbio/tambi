@@ -9,6 +9,7 @@ from app.api.routes import (
     monthly_reports,
     opportunities,
     research,
+    visualize,
 )
 from app.core.config import get_settings
 from app.core.logging import configure_logging
@@ -38,3 +39,4 @@ app.include_router(opportunities.router, prefix=settings.api_v1_prefix)
 app.include_router(ask.router, prefix=settings.api_v1_prefix)
 app.include_router(research.router, prefix=settings.api_v1_prefix)
 app.include_router(monthly_reports.router, prefix=settings.api_v1_prefix)
+app.include_router(visualize.router, prefix=settings.api_v1_prefix)

@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
-import { Box, FormControl, MenuItem, Select, Typography } from "@mui/material";
+import { Box, Divider, FormControl, MenuItem, Select, Typography } from "@mui/material";
 import { getFilters } from "../api/contracts";
 import { AddressableMarket } from "../components/AddressableMarket";
 import { CompetitivePosition } from "../components/CompetitivePosition";
 import { RelationshipNetwork } from "../components/RelationshipNetwork";
+import { HeadToHead } from "../components/HeadToHead";
 import { useApi } from "../api/useApi";
 import { ACCENTURE_COLOR } from "../theme/competitorColors";
 import { INK_MUTED } from "../theme/dashboardStyles";
@@ -49,6 +50,11 @@ export function DashboardPage() {
 
       {/* Supplier <-> Defence agency relationship network */}
       <RelationshipNetwork filter={filter} />
+
+      <Divider sx={{ mt: 5, mb: 1 }} />
+
+      {/* Head-to-head firm comparison */}
+      <HeadToHead filter={filter} />
     </Box>
   );
 }
