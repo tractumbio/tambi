@@ -5,7 +5,9 @@ import {
 } from "@mui/material";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import CloseIcon from "@mui/icons-material/Close";
+import DownloadIcon from "@mui/icons-material/Download";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import SourceIcon from "@mui/icons-material/Source";
@@ -164,6 +166,108 @@ function MovementTable({ section, kind }: { section: MovementSection; kind: stri
   );
 }
 
+// ── HTML export builder ──────────────────────────────────────────────────────────
+function buildReportHtml(report: MonthlyReportOut): string {
+  const p = report.payload;
+  const spend = p.facts.spend;
+  const fa = formatAud;
+
+  const movementRows = (items: typeof p.facts.new_awards.notable) =>
+    items.slice(0, 6).map((n) =>
+      `<tr><td>${n.title || n.cn_id || "—"}</td><td>${n.competitor_label}</td><td>${n.agency || "—"}</td><td style="text-align:right;font-weight:700">${fa(n.value ?? 0)}</td></tr>`
+    ).join("");
+
+  const newsItems = (cat: string) =>
+    p.news.filter((n) => n.category === cat).map((n) => {
+      const host = (() => { try { return new URL(n.url).hostname.replace("www.", ""); } catch { return n.url; } })();
+      return `<div class="news-item"><div class="news-headline"><a href="${n.url}" target="_blank">${n.headline || "—"}</a>${n.is_new ? ' <span class="badge">NEW</span>' : ""}</div>${n.summary ? `<div class="news-summary">${n.summary}</div>` : ""}${n.relevance ? `<div class="relevance">${n.relevance}</div>` : ""}<div class="news-meta">${host}${n.published_date ? ` · ${n.published_date}` : ""}</div></div>`;
+    }).join("");
+
+  const momentum = p.facts.competitor_momentum.slice(0, 8).map((m) =>
+    `<tr><td>${m.label}</td><td style="text-align:right;font-weight:700">${fa(m.value_12m)}</td><td style="text-align:center">${m.trend === "up" ? "▲" : m.trend === "down" ? "▼" : "—"}</td></tr>`
+  ).join("");
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>${report.title || "TAMBI Monthly Report"}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:#111827;background:#fff;padding:32px;max-width:900px;margin:0 auto}
+  h1{font-size:26px;font-weight:800;margin-bottom:4px}
+  h2{font-size:16px;font-weight:700;margin:28px 0 8px;text-transform:uppercase;letter-spacing:.08em;color:#6B7280}
+  h3{font-size:13px;font-weight:700;margin:16px 0 6px;text-transform:uppercase;color:#9CA3AF}
+  p{line-height:1.7;margin-bottom:8px;color:#374151}
+  .label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#A100FF;margin-bottom:4px}
+  .meta{font-size:12px;color:#9CA3AF;margin-bottom:24px}
+  .card{border:1px solid #E5E7EB;border-radius:8px;padding:16px;margin-bottom:16px}
+  .card.purple{background:#FAF5FF;border-color:#E9D5FF}
+  .card.accent{border-color:#A100FF;background:rgba(161,0,255,.03)}
+  .stats{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:12px}
+  .stat .num{font-size:22px;font-weight:800}.stat .lbl{font-size:11px;color:#9CA3AF}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+  th{text-align:left;padding:6px 8px;background:#F9FAFB;border-bottom:2px solid #E5E7EB;font-size:11px;text-transform:uppercase;color:#6B7280}
+  td{padding:6px 8px;border-bottom:1px solid #F3F4F6}
+  tr:last-child td{border-bottom:none}
+  .news-item{border:1px solid #E5E7EB;border-radius:6px;padding:10px 12px;margin-bottom:8px}
+  .news-headline{font-weight:600;font-size:13px;margin-bottom:4px}
+  .news-headline a{color:#111827;text-decoration:none}.news-headline a:hover{text-decoration:underline}
+  .news-summary{font-size:12px;color:#4B5563;margin-bottom:3px}
+  .relevance{font-size:11.5px;color:#A100FF;font-style:italic;margin-bottom:3px}
+  .news-meta{font-size:10.5px;color:#9CA3AF}
+  .badge{display:inline-block;padding:1px 6px;background:#DCFCE7;color:#166534;border-radius:4px;font-size:9px;font-weight:700;margin-left:6px;vertical-align:middle}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:600px){.grid2{grid-template-columns:1fr}.stats{gap:12px}}
+  @media print{body{padding:16px}}
+</style>
+</head>
+<body>
+<div class="label">TAMBI · Market Intelligence Report</div>
+<h1>${report.title || "Monthly Market Intelligence"}</h1>
+<div class="meta">Generated ${new Date(report.generated_at).toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" })} · ${report.contract_source_count} contract sources · ${report.news_source_count} news items · ${report.model?.replace("claude-", "").replace("-20251001", "") || ""} · ${report.effort || ""}</div>
+
+<div class="card purple">
+  <div class="stats">
+    <div class="stat"><div class="num">${p.knowledge_change.new_items}</div><div class="lbl">new intelligence items</div></div>
+    <div class="stat"><div class="num">${p.knowledge_change.delta_pct == null ? "—" : `${p.knowledge_change.delta_pct >= 0 ? "+" : ""}${p.knowledge_change.delta_pct}%`}</div><div class="lbl">vs prior period</div></div>
+    <div class="stat"><div class="num">${p.knowledge_change.total_corpus}</div><div class="lbl">total knowledge base</div></div>
+  </div>
+</div>
+<div class="card"><div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#6B7280;margin-bottom:8px">Executive Summary</div>
+<p style="font-size:14.5px;color:#1F2937">${report.executive_summary || ""}</p></div>
+
+<h2>1 · Contract Movements</h2>
+<p>${p.narrative.contract_movements}</p>
+<div class="grid2">
+  <div><h3 style="color:#166534">New Awards · ${fa(p.facts.new_awards.total_value)} (${p.facts.new_awards.total_count})</h3>
+  <table><thead><tr><th>Contract</th><th>Competitor</th><th>Agency</th><th style="text-align:right">Value</th></tr></thead><tbody>${movementRows(p.facts.new_awards.notable)}</tbody></table></div>
+  <div><h3 style="color:#92400E">Amendments · ${fa(p.facts.amendments.total_value)} (${p.facts.amendments.total_count})</h3>
+  <table><thead><tr><th>Contract</th><th>Competitor</th><th>Agency</th><th style="text-align:right">Value</th></tr></thead><tbody>${movementRows(p.facts.amendments.notable)}</tbody></table></div>
+</div>
+<h3 style="color:#B91C1C;margin-top:16px">Expiries &amp; Recompetes · ${fa(p.facts.expiries.total_value)} (${p.facts.expiries.total_count})</h3>
+<table><thead><tr><th>Contract</th><th>Incumbent</th><th>Agency</th><th style="text-align:right">Value</th></tr></thead><tbody>${movementRows(p.facts.expiries.notable)}</tbody></table>
+
+<h2>2 · Expenditure &amp; Market Trends</h2>
+<p>${p.narrative.expenditure_trends}</p>
+<div class="stats">
+  <div class="stat"><div class="num">${fa(spend.new_award_value)}</div><div class="lbl">new-award value${spend.delta_pct != null ? ` · ${spend.delta_pct >= 0 ? "+" : ""}${spend.delta_pct}%` : ""}</div></div>
+  <div class="stat"><div class="num" style="color:#A100FF">${fa(spend.accenture_value)}</div><div class="lbl">Accenture · ${(spend.accenture_share * 100).toFixed(1)}% share</div></div>
+</div>
+<h3>Competitor Momentum (rolling 12m)</h3>
+<table style="max-width:500px"><thead><tr><th>Competitor</th><th style="text-align:right">Value</th><th style="text-align:center">Trend</th></tr></thead><tbody>${momentum}</tbody></table>
+
+<h2>3 · Market Intelligence</h2>
+<p>${p.narrative.market_news}</p>
+${["competitor", "government", "macro"].map((cat) => { const items = newsItems(cat); return items ? `<h3>${cat}</h3>${items}` : ""; }).join("")}
+
+<div class="card accent" style="margin-top:24px">
+  <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#A100FF;margin-bottom:8px">Implications &amp; Watch-list for Accenture</div>
+  <p style="font-size:14.5px;color:#1F2937">${p.narrative.implications}</p>
+</div>
+</body></html>`;
+}
+
 // ── report viewer ────────────────────────────────────────────────────────────────
 export function ReportView({ report }: { report: MonthlyReportOut }) {
   const p = report.payload;
@@ -172,21 +276,55 @@ export function ReportView({ report }: { report: MonthlyReportOut }) {
   const newsByCat = (cat: string) => p.news.filter((n) => n.category === cat);
   const deltaColor = kc.delta_pct == null ? INK_MUTED : kc.delta_pct >= 0 ? "#166534" : "#B91C1C";
 
+  const saveAsHtml = () => {
+    const html = buildReportHtml(report);
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tambi-report-${report.period_start}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const saveAsPdf = () => {
+    const html = buildReportHtml(report);
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    setTimeout(() => { win.print(); }, 400);
+  };
+
   return (
-    <Box sx={{ maxWidth: 900 }}>
-      {/* Header */}
-      <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 2, mb: 1 }}>
+    <Card elevation={0} sx={{ ...CARD_SX, overflow: "hidden", maxWidth: 960 }}>
+      {/* Download toolbar */}
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2,
+        px: 2.5, py: 1.5, borderBottom: `1px solid ${CARD_BORDER}`, bgcolor: "#FAFAFA", flexWrap: "wrap" }}>
         <Box>
           <Typography sx={{ fontSize: 11, letterSpacing: ".14em", textTransform: "uppercase", color: ACCENTURE_COLOR, fontWeight: 700 }}>
             Market Intelligence Report
           </Typography>
-          <Typography variant="h6" sx={{ fontWeight: 800 }}>{report.title}</Typography>
+          <Typography sx={{ fontSize: 15, fontWeight: 800, lineHeight: 1.3 }}>{report.title}</Typography>
         </Box>
-        <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0 }}>
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap" }}>
           {report.model && <Chip size="small" label={report.model.replace("claude-", "").replace("-20251001", "")} sx={{ fontSize: 10 }} />}
           {report.effort && <Chip size="small" label={report.effort} variant="outlined" sx={{ fontSize: 10 }} />}
+          <Button size="small" variant="outlined" startIcon={<DownloadIcon />} onClick={saveAsHtml}
+            sx={{ textTransform: "none", fontSize: 12, borderColor: "#D1D5DB", color: "#374151",
+              "&:hover": { borderColor: ACCENTURE_COLOR, color: ACCENTURE_COLOR } }}>
+            HTML
+          </Button>
+          <Button size="small" variant="outlined" startIcon={<PictureAsPdfIcon />} onClick={saveAsPdf}
+            sx={{ textTransform: "none", fontSize: 12, borderColor: "#D1D5DB", color: "#374151",
+              "&:hover": { borderColor: ACCENTURE_COLOR, color: ACCENTURE_COLOR } }}>
+            PDF
+          </Button>
         </Box>
       </Box>
+
+      <Box sx={{ p: 3 }}>
       <Typography sx={{ fontSize: 12, color: INK_MUTED, mb: 2 }}>
         Generated {formatDate(report.generated_at)} · {report.contract_source_count} contract sources · {report.news_source_count} news items
       </Typography>
@@ -316,7 +454,8 @@ export function ReportView({ report }: { report: MonthlyReportOut }) {
           <Typography sx={{ fontSize: 14.5, lineHeight: 1.7, color: "#1F2937" }}>{p.narrative.implications}</Typography>
         </CardContent>
       </Card>
-    </Box>
+      </Box>
+    </Card>
   );
 }
 
