@@ -165,3 +165,7 @@ export function removeDomain(domain: string): Promise<{ removed: string }> {
 export function triggerHarvest(effort = "standard"): Promise<{ fetched: number; inserted: number; updated: number }> {
   return fetch(`${API_BASE_URL}/monthly-reports/harvest?effort=${effort}`, { method: "POST" }).then((r) => j(r));
 }
+
+export function getLatest(): Promise<MonthlyReportOut> {
+  return fetch(`${API_BASE_URL}/monthly-reports/latest`).then((r) => j(r));
+}

@@ -90,7 +90,7 @@ function MovementTable({ section, kind }: { section: MovementSection; kind: stri
 }
 
 // ── report viewer ────────────────────────────────────────────────────────────────
-function ReportView({ report }: { report: MonthlyReportOut }) {
+export function ReportView({ report }: { report: MonthlyReportOut }) {
   const p = report.payload;
   const kc = p.knowledge_change;
   const spend = p.facts.spend;
