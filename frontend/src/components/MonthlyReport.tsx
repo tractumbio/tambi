@@ -437,20 +437,23 @@ export function MonthlyReport() {
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const openReport = useCallback((id: number) => {
+    getReport(id).then(setSelected).catch((e) => setError(e.message));
+  }, []);
+
   useEffect(() => {
     getDefaultStructure().then((r) => setStructure(r.structure)).catch(() => {});
     fetch(`${API_BASE_URL}/monthly-reports/sources`).then((r) => r.json()).then(setSources).catch(() => {});
-    listReports().then(setReports).catch(() => {});
-  }, []);
+    listReports().then((rs) => {
+      setReports(rs);
+      if (rs.length > 0) openReport(rs[0].id);
+    }).catch(() => {});
+  }, [openReport]);
 
   // Refresh the data-coverage summary whenever the period changes.
   useEffect(() => {
     if (start && end && end > start) getCoverage(start, end).then(setCoverage).catch(() => setCoverage(null));
   }, [start, end]);
-
-  const openReport = useCallback((id: number) => {
-    getReport(id).then(setSelected).catch((e) => setError(e.message));
-  }, []);
 
   const run = useCallback(async () => {
     setRunning(true); setError(null); setSelected(null);
