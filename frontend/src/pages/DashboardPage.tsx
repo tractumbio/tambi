@@ -4,8 +4,9 @@ import { getFilters } from "../api/contracts";
 import { AccenturePosition } from "../components/AccenturePosition";
 import { AddressableMarket } from "../components/AddressableMarket";
 import { CompetitivePosition } from "../components/CompetitivePosition";
-import { RelationshipNetwork } from "../components/RelationshipNetwork";
+import { DashboardAiSummary } from "../components/DashboardAiSummary";
 import { HeadToHead } from "../components/HeadToHead";
+import { RelationshipNetwork } from "../components/RelationshipNetwork";
 import { useApi } from "../api/useApi";
 import { ACCENTURE_COLOR } from "../theme/competitorColors";
 import { INK_MUTED } from "../theme/dashboardStyles";
@@ -56,6 +57,9 @@ export function DashboardPage() {
 
       {/* Supplier <-> Defence agency relationship network */}
       <RelationshipNetwork filter={filter} />
+
+      {/* AI Executive Summary — synthesises everything above */}
+      <DashboardAiSummary filter={filter} />
 
       <Divider sx={{ mt: 5, mb: 1 }} />
 

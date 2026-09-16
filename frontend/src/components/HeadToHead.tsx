@@ -4,12 +4,10 @@ import {
   ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 import {
-  Box, Button, Card, CardContent, CircularProgress,
+  Box, Card, CardContent,
   FormControl, MenuItem, Select, Skeleton, Typography,
 } from "@mui/material";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { getShareOverTime, getCompetitorMomentum, getByTheme, getNetworkContracts } from "../api/metrics";
-import { commissionResearch } from "../api/research";
 import { getFilters } from "../api/contracts";
 import { useApi } from "../api/useApi";
 import { formatAud } from "../lib/format";
@@ -69,8 +67,6 @@ function KpiTile({ label, a, b, fmtA, fmtB, colorA, colorB }: {
 export function HeadToHead({ filter }: { filter?: CommonFilterParams }) {
   const [firmA, setFirmA] = useState("accenture");
   const [firmB, setFirmB] = useState("kpmg");
-  const [aiInsight, setAiInsight] = useState<string | null>(null);
-  const [aiLoading, setAiLoading] = useState(false);
 
   const filters = useApi(getFilters, []);
   const shareOverTime = useApi(() => getShareOverTime("quarter", filter), [filter?.theme ?? ""]);
@@ -131,24 +127,6 @@ export function HeadToHead({ filter }: { filter?: CommonFilterParams }) {
   const labelFor = (slug: string) => competitors.find((c) => c.slug === slug)?.label ?? slug;
   const colorA = competitorColor(firmA);
   const colorB = competitorColor(firmB);
-
-  const generateInsight = async () => {
-    setAiLoading(true);
-    setAiInsight(null);
-    try {
-      const labelA = labelFor(firmA);
-      const labelB = labelFor(firmB);
-      const report = await commissionResearch(
-        `${labelA} vs ${labelB} — Head-to-Head Defence Market Analysis`,
-        `Compare ${labelA} and ${labelB} in the Australian Defence procurement market. Analyse: total contract value, number of contracts, momentum trends, key agencies each firm works with, dominant capability themes, and contract duration patterns. Provide strategic implications for Accenture where relevant.`,
-      );
-      setAiInsight(report.executive_summary + "\n\n" + report.recommendation);
-    } catch {
-      setAiInsight("Could not generate AI insights — please try again.");
-    } finally {
-      setAiLoading(false);
-    }
-  };
 
   const loading = shareOverTime.loading || momentum.loading;
 
@@ -275,42 +253,6 @@ export function HeadToHead({ filter }: { filter?: CommonFilterParams }) {
         </Card>
       </Box>
 
-      {/* AI Insights */}
-      <Card elevation={0} sx={{ ...CARD_SX, borderColor: aiInsight ? ACCENTURE_COLOR : undefined, bgcolor: aiInsight ? "rgba(161,0,255,.02)" : undefined }}>
-        <CardContent>
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: aiInsight ? 2 : 0 }}>
-            <Typography sx={{ ...LABEL_SX }}>AI Strategic Insights</Typography>
-            {!aiInsight && (
-              <Button
-                variant="outlined" size="small" startIcon={aiLoading ? <CircularProgress size={14} /> : <AutoAwesomeIcon />}
-                disabled={aiLoading}
-                onClick={generateInsight}
-                sx={{ textTransform: "none", fontSize: 12.5, borderColor: ACCENTURE_COLOR, color: ACCENTURE_COLOR }}
-              >
-                {aiLoading ? `Analysing ${labelFor(firmA)} vs ${labelFor(firmB)}…` : "Generate AI Insights"}
-              </Button>
-            )}
-          </Box>
-          {aiInsight && (
-            <>
-              {aiInsight.split("\n\n").map((para, i) => (
-                <Typography key={i} sx={{ fontSize: 14, lineHeight: 1.75, color: "#1F2937", mb: 1.25, whiteSpace: "pre-line" }}>
-                  {para}
-                </Typography>
-              ))}
-              <Button size="small" onClick={() => { setAiInsight(null); generateInsight(); }}
-                sx={{ mt: 1, textTransform: "none", fontSize: 12, color: ACCENTURE_COLOR, px: 0 }}>
-                Regenerate
-              </Button>
-            </>
-          )}
-          {!aiInsight && !aiLoading && (
-            <Typography sx={{ fontSize: 13, color: INK_MUTED, mt: 0.5 }}>
-              Click to run a Claude-powered analysis of {labelFor(firmA)} vs {labelFor(firmB)} — queries the live warehouse.
-            </Typography>
-          )}
-        </CardContent>
-      </Card>
     </Box>
   );
 }
