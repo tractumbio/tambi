@@ -7,6 +7,7 @@ import { useApi } from "../api/useApi";
 import { formatAud, formatPct } from "../lib/format";
 import { ACCENTURE_COLOR, competitorColor } from "../theme/competitorColors";
 import { CARD_SX, INK, INK_MUTED, LABEL_SX, tooltipStyle } from "../theme/dashboardStyles";
+import { InfoTooltip } from "./InfoTooltip";
 import type { CommonFilterParams, PeerCohort } from "../types";
 
 const GRID = "#E7ECF3";
@@ -26,7 +27,10 @@ export function CompetitivePosition({ filter }: { filter?: CommonFilterParams })
         <Typography variant="overline" sx={{ color: ACCENTURE_COLOR, fontSize: 11 }}>
           Competitive position
         </Typography>
-        <Typography variant="h6">Accenture vs Peer Cohorts</Typography>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Typography variant="h6">Accenture vs Peer Cohorts</Typography>
+          <InfoTooltip text="Groups suppliers into labelled competitor cohorts (Big 4, MBB, Challengers). Share computed as Accenture value ÷ (Accenture + cohort total) from the same AusTender dataset." />
+        </Box>
         <Typography sx={{ fontSize: 13, color: INK_MUTED, mt: .5 }}>
           Head-to-head on the Accenture-addressable Defence services market.
         </Typography>

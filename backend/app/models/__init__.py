@@ -6,6 +6,7 @@ populated — Alembic autogenerate and ``create_all`` both rely on that.
 
 from app.db.base import Base
 from app.models.contract import Contract, RawRelease
+from app.models.feedback import Feedback
 from app.models.ingest import IngestState
 from app.models.knowledge import KnowledgeItem, NewsDomain
 from app.models.opportunity import Atm
@@ -20,6 +21,7 @@ __all__ = [
     "CompetitorGroup",
     "Contract",
     "ContractTheme",
+    "Feedback",
     "IngestState",
     "KnowledgeItem",
     "MonthlyReport",

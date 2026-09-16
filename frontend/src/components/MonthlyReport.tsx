@@ -20,6 +20,7 @@ import {
   type Coverage,
 } from "../api/monthlyReports";
 import { formatAud, formatDate } from "../lib/format";
+import { InfoTooltip } from "./InfoTooltip";
 import { ACCENTURE_COLOR, competitorColor } from "../theme/competitorColors";
 import { CARD_SX, LABEL_SX, INK_MUTED, CARD_BORDER } from "../theme/dashboardStyles";
 
@@ -371,7 +372,10 @@ export function ReportView({ report }: { report: MonthlyReportOut }) {
       </Card>
 
       {/* Section 1 — Contract Movements */}
-      <Label>1 · Contract Movements</Label>
+      <Box sx={{ display: "flex", alignItems: "center", mt: 3, mb: 1 }}>
+        <Typography sx={{ ...LABEL_SX }}>1 · Contract Movements</Typography>
+        <InfoTooltip text="Computed deterministically from AusTender: new awards are contracts with date_published in the selected window; amendments detected via amendment_count > 0; expiries are contracts with period_end in the window." />
+      </Box>
       <Typography sx={{ fontSize: 14, lineHeight: 1.7, color: "#374151", mb: 1 }}>{p.narrative.contract_movements}</Typography>
       <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, mt: 1 }}>
         <Box><Typography sx={{ fontSize: 12, fontWeight: 700, color: "#166534" }}>New awards</Typography>
@@ -385,7 +389,10 @@ export function ReportView({ report }: { report: MonthlyReportOut }) {
       </Box>
 
       {/* Section 2 — Expenditure & Trends */}
-      <Label>2 · Expenditure & Market Trends</Label>
+      <Box sx={{ display: "flex", alignItems: "center", mt: 3, mb: 1 }}>
+        <Typography sx={{ ...LABEL_SX }}>2 · Expenditure & Market Trends</Typography>
+        <InfoTooltip text="Total award value from the SQL warehouse for the period. Accenture share = Accenture value ÷ total. Competitor momentum uses a rolling 12-month window with trend direction vs prior 12 months." />
+      </Box>
       <Typography sx={{ fontSize: 14, lineHeight: 1.7, color: "#374151", mb: 1.5 }}>{p.narrative.expenditure_trends}</Typography>
       <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mb: 1.5 }}>
         <Box sx={{ ...CARD_SX, p: 1.5, minWidth: 150 }}>
@@ -414,7 +421,10 @@ export function ReportView({ report }: { report: MonthlyReportOut }) {
       </Box>
 
       {/* Section 3 — Market Intelligence */}
-      <Label>3 · Market Intelligence</Label>
+      <Box sx={{ display: "flex", alignItems: "center", mt: 3, mb: 1 }}>
+        <Typography sx={{ ...LABEL_SX }}>3 · Market Intelligence</Typography>
+        <InfoTooltip text="Live web searches run by Claude at report-generation time, scoped to major competitors, Defence policy, and macro-economic themes. Each item carries a source URL; relevance assessed by the model." />
+      </Box>
       <Typography sx={{ fontSize: 14, lineHeight: 1.7, color: "#374151", mb: 1.5 }}>{p.narrative.market_news}</Typography>
       {(["competitor", "government", "macro"] as const).map((cat) => {
         const items = newsByCat(cat);

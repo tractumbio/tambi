@@ -9,6 +9,7 @@ import { useApi } from "../api/useApi";
 import { formatAud, formatDate } from "../lib/format";
 import { ACCENTURE_COLOR, CHART_NAVY, competitorColor } from "../theme/competitorColors";
 import { CARD_SX, INK, INK_MUTED, LABEL_SX } from "../theme/dashboardStyles";
+import { InfoTooltip } from "./InfoTooltip";
 import type { CommonFilterParams, NetworkContractRow, NetworkGraphData, NetworkNode } from "../types";
 
 const W = 940;
@@ -298,7 +299,10 @@ export function RelationshipNetwork({ filter }: { filter?: CommonFilterParams })
           <Typography variant="overline" sx={{ color: ACCENTURE_COLOR, fontSize: 11 }}>
             Relationships
           </Typography>
-          <Typography variant="h6">Supplier ↔ Defence Branch Network</Typography>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Typography variant="h6">Supplier ↔ Defence Branch Network</Typography>
+            <InfoTooltip text="Force-directed graph built from awarded contracts. Node size = total contract value; edges = supplier-agency pairs from AusTender. Filter by firm to highlight relationship clusters." />
+          </Box>
           <Typography sx={{ fontSize: 13, color: INK_MUTED, mt: .5 }}>
             How Accenture and competitors connect to Defence branches (CASG, Army, DSTG, CIOG…).
             Drag nodes to rearrange; node size = contract value, line weight = relationship value.

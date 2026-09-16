@@ -11,6 +11,7 @@ import { useApi } from "../api/useApi";
 import { formatAud, formatPct } from "../lib/format";
 import { ACCENTURE_COLOR, ADDRESSABLE, offeringColor } from "../theme/competitorColors";
 import { CARD_SX, INK, INK_MUTED, LABEL_SX, tooltipStyle } from "../theme/dashboardStyles";
+import { InfoTooltip } from "./InfoTooltip";
 import type { CommonFilterParams, FyWindow } from "../types";
 
 const GRID = "#E7ECF3";
@@ -60,7 +61,10 @@ export function AddressableMarket({ filter }: { filter?: CommonFilterParams }) {
           <Typography variant="overline" sx={{ color: ACCENTURE_COLOR, fontSize: 11 }}>
             Market Overview
           </Typography>
-          <Typography variant="h6">Defence Expenditure on Consulting</Typography>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Typography variant="h6">Defence Expenditure on Consulting</Typography>
+            <InfoTooltip text="Aggregates all AusTender awards to professional-services firms across 5 years. Values annualised by contract duration; service-offering tagged by keyword matching." />
+          </Box>
           <Typography sx={{ fontSize: 13, color: INK_MUTED, mt: 0.5 }}>
             The addressable professional-services slice of the Australian Defence market.
           </Typography>

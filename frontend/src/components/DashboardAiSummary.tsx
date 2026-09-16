@@ -4,6 +4,7 @@ import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { commissionResearch } from "../api/research";
 import { ACCENTURE_COLOR } from "../theme/competitorColors";
 import { CARD_SX, INK_MUTED } from "../theme/dashboardStyles";
+import { InfoTooltip } from "./InfoTooltip";
 import type { CommonFilterParams } from "../types";
 
 export function DashboardAiSummary({ filter }: { filter?: CommonFilterParams }) {
@@ -51,7 +52,10 @@ Be specific, cite patterns from the data, and write at McKinsey executive-summar
           <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", mb: insight ? 2.5 : 0, flexWrap: "wrap", gap: 2 }}>
             <Box>
               <Typography variant="overline" sx={{ color: ACCENTURE_COLOR, fontSize: 11 }}>Claude · Strategic Intelligence</Typography>
-              <Typography variant="h6" sx={{ fontWeight: 800 }}>AI Executive Summary</Typography>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Typography variant="h6" sx={{ fontWeight: 800 }}>AI Executive Summary</Typography>
+                <InfoTooltip text="On demand — Claude synthesises all dashboard data (market sizing, Accenture position, competitive landscape, network, head-to-head) into a structured strategic brief. No numbers are invented; all figures come from the SQL warehouse." />
+              </Box>
               {!insight && (
                 <Typography sx={{ fontSize: 13, color: INK_MUTED, mt: 0.5 }}>
                   Claude reads the full dashboard — market, Accenture's position, competitors, relationships, and head-to-head — and synthesises a strategic briefing.

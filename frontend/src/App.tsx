@@ -6,6 +6,7 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { ConversePage } from "./pages/ConversePage";
 import { ResearchPage } from "./pages/ResearchPage";
 import { OpportunitiesPage } from "./pages/OpportunitiesPage";
+import { FeedbackPage } from "./pages/FeedbackPage";
 
 const TABS = [
   { label: "Overview", description: "Start here" },
@@ -13,6 +14,7 @@ const TABS = [
   { label: "Opportunities", description: "Live pipeline" },
   { label: "Ask", description: "Query the data" },
   { label: "Research", description: "Monthly reporting" },
+  { label: "Feedback", description: "Improve the tool" },
 ];
 
 export function App() {
@@ -75,6 +77,7 @@ export function App() {
             {tab === 2 && <OpportunitiesPage />}
             {tab === 3 && <ConversePage />}
             {tab === 4 && <ResearchPage />}
+            {tab === 5 && <FeedbackPage />}
           </Box>
         </Box>
 

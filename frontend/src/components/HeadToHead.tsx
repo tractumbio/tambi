@@ -13,6 +13,7 @@ import { useApi } from "../api/useApi";
 import { formatAud } from "../lib/format";
 import { ACCENTURE_COLOR, competitorColor } from "../theme/competitorColors";
 import { CARD_SX, INK_MUTED, LABEL_SX, tooltipStyle } from "../theme/dashboardStyles";
+import { InfoTooltip } from "./InfoTooltip";
 import type { CommonFilterParams } from "../types";
 
 const GRID = "#E7ECF3";
@@ -136,7 +137,10 @@ export function HeadToHead({ filter }: { filter?: CommonFilterParams }) {
       <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", mb: 3, flexWrap: "wrap", gap: 2 }}>
         <Box>
           <Typography variant="overline" sx={{ color: ACCENTURE_COLOR, fontSize: 11 }}>Head-to-Head</Typography>
-          <Typography variant="h6" sx={{ fontWeight: 800 }}>Firm Comparison</Typography>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Typography variant="h6" sx={{ fontWeight: 800 }}>Firm Comparison</Typography>
+            <InfoTooltip text="Pulls rolling 12-month contract values and quarterly trends for any two selected firms directly from the AusTender warehouse. Theme coverage shows which Defence capability areas each firm targets." />
+          </Box>
           <Typography sx={{ fontSize: 13, color: INK_MUTED, mt: 0.5 }}>
             Contract value, count, duration, and theme coverage — two firms side by side.
           </Typography>

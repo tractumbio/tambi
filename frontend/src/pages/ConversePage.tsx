@@ -7,6 +7,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import CodeIcon from "@mui/icons-material/Code";
 import { askMarket, AskResponse } from "../api/ask";
 import { VisualStudio } from "../components/VisualStudio";
+import { InfoTooltip } from "../components/InfoTooltip";
 
 const EXAMPLE_QUESTIONS = [
   "Which 5 firms have won the most Defence contract value?",
@@ -92,7 +93,10 @@ function AskPanel() {
       {/* Header */}
       <Box sx={{ mb: 2 }}>
         <Typography variant="overline" sx={{ color: "#A100FF", fontSize: 11 }}>Query the Data</Typography>
-        <Typography variant="h6" sx={{ fontWeight: 800, fontSize: 17 }}>Ask the Market</Typography>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Typography variant="h6" sx={{ fontWeight: 800, fontSize: 17 }}>Ask the Market</Typography>
+          <InfoTooltip text="Natural language → parameterised SQL, executed read-only against the AusTender warehouse. The model writes the query; the database computes the numbers. Answers always cite source contract IDs." />
+        </Box>
         <Typography sx={{ color: "#6E6E6E", mt: 0.25, fontSize: 13 }}>
           Natural language → safe SQL → narrated answer with contract sources.
         </Typography>

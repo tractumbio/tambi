@@ -11,6 +11,7 @@ import { useApi } from "../api/useApi";
 import { formatAud } from "../lib/format";
 import { ACCENTURE_COLOR } from "../theme/competitorColors";
 import { CARD_SX, INK_MUTED, LABEL_SX, tooltipStyle } from "../theme/dashboardStyles";
+import { InfoTooltip } from "./InfoTooltip";
 import type { CommonFilterParams, FyWindow } from "../types";
 
 const GRID = "#E7ECF3";
@@ -69,7 +70,10 @@ export function AccenturePosition({ filter }: { filter?: CommonFilterParams }) {
       <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", mb: 3, flexWrap: "wrap", gap: 2 }}>
         <Box>
           <Typography variant="overline" sx={{ color: ACCENTURE_COLOR, fontSize: 11 }}>Accenture</Typography>
-          <Typography variant="h6" sx={{ fontWeight: 800 }}>Accenture's Position</Typography>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Typography variant="h6" sx={{ fontWeight: 800 }}>Accenture's Position</Typography>
+            <InfoTooltip text="Filters AusTender awards where the supplier entity maps to the Accenture competitor group. Values aggregated from contract records; current contracts use a 10-year forward window on period_end." />
+          </Box>
           <Typography sx={{ fontSize: 13, color: INK_MUTED, mt: 0.5 }}>
             Accenture's footprint and trend in Defence consulting.
           </Typography>
