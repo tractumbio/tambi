@@ -58,9 +58,12 @@ export function AddressableMarket({ filter }: { filter?: CommonFilterParams }) {
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
         <Box>
           <Typography variant="overline" sx={{ color: ACCENTURE_COLOR, fontSize: 11 }}>
-            Positioning
+            Market Overview
           </Typography>
-          <Typography variant="h6">Accenture's Current Positioning</Typography>
+          <Typography variant="h6">Defence Expenditure on Consulting</Typography>
+          <Typography sx={{ fontSize: 13, color: INK_MUTED, mt: 0.5 }}>
+            The addressable professional-services slice of the Australian Defence market.
+          </Typography>
         </Box>
         <ToggleButtonGroup
           size="small" exclusive value={fyWindow}
@@ -75,22 +78,20 @@ export function AddressableMarket({ filter }: { filter?: CommonFilterParams }) {
         </ToggleButtonGroup>
       </Box>
 
-      {/* Addressable KPI tiles */}
-      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, mb: 2 }}>
+      {/* Market KPI tiles — market-level only, no Accenture numbers here */}
+      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, mb: 2 }}>
         {[
-          { label: "Addressable Market", value: formatAud(s?.addressable_value), sub: "Total contract value" },
-          { label: "Share of Defence", value: s ? formatPct(s.addressable_pct_of_defence) : "—", sub: "Addressable ÷ all Defence" },
-          { label: "Accenture Value", value: formatAud(s?.accenture_value), sub: "Within addressable", highlight: true },
-          { label: "Accenture Share", value: s ? formatPct(s.accenture_share_of_addressable) : "—", sub: "Of addressable market", highlight: true },
+          { label: "Addressable Market", value: formatAud(s?.addressable_value), sub: "Total consulting contract value" },
+          { label: "Annualised Run Rate", value: formatAud(s?.addressable_annualised), sub: "Current market size per year" },
+          { label: "Share of All Defence", value: s ? formatPct(s.addressable_pct_of_defence) : "—", sub: "Consulting ÷ total Defence spend" },
         ].map((k) => (
           <Card key={k.label} elevation={0} sx={CARD_SX}>
             <CardContent sx={{ p: "17px !important" }}>
               <Typography sx={{ ...LABEL_SX, mb: 1 }}>{k.label}</Typography>
               {summary.loading ? <Skeleton width={110} height={36} /> : (
-                <Typography sx={{
-                  fontSize: 28, fontWeight: 800, letterSpacing: "-.02em", lineHeight: 1.05,
-                  color: k.highlight ? ACCENTURE_COLOR : INK, fontVariantNumeric: "tabular-nums",
-                }}>{k.value}</Typography>
+                <Typography sx={{ fontSize: 28, fontWeight: 800, letterSpacing: "-.02em", lineHeight: 1.05, color: INK, fontVariantNumeric: "tabular-nums" }}>
+                  {k.value}
+                </Typography>
               )}
               <Typography sx={{ fontSize: 12, color: INK_MUTED, mt: .75 }}>{k.sub}</Typography>
             </CardContent>
@@ -99,8 +100,8 @@ export function AddressableMarket({ filter }: { filter?: CommonFilterParams }) {
       </Box>
 
       <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
-        {/* Service-offering breakdown — coloured by the purple offering ramp */}
-        <Panel title="Value by Service Offering · Accenture vs field">
+        {/* Service-offering breakdown — market total, no Accenture */}
+        <Panel title="Market Value by Service Offering">
           {offerings.loading ? <Skeleton variant="rectangular" height={280} /> :
             (offerings.data?.length ?? 0) === 0 ? <Empty /> : (
             <ResponsiveContainer width="100%" height={280}>
@@ -109,14 +110,12 @@ export function AddressableMarket({ filter }: { filter?: CommonFilterParams }) {
                 <XAxis type="number" tick={{ fontSize: 11, fill: SLATE }} tickFormatter={(v) => formatAud(v as number)} />
                 <YAxis type="category" dataKey="service_offering" width={130}
                   tick={{ fontSize: 10, fill: INK }} tickFormatter={(v) => shortOffering(String(v))} />
-                <Tooltip formatter={(v: number, n: string) => [formatAud(v), n === "accenture_value" ? "Accenture" : "Field"]}
-                  contentStyle={tooltipStyle} />
-                <Bar dataKey="field_value" stackId="o" name="Field">
+                <Tooltip formatter={(v: number) => [formatAud(v), "Market"]} contentStyle={tooltipStyle} />
+                <Bar dataKey="total_value" name="Market">
                   {(offerings.data ?? []).map((o) => (
-                    <Cell key={o.service_offering} fill={offeringColor(o.service_offering)} fillOpacity={0.55} />
+                    <Cell key={o.service_offering} fill={offeringColor(o.service_offering)} fillOpacity={0.75} />
                   ))}
                 </Bar>
-                <Bar dataKey="accenture_value" stackId="o" fill={ACCENTURE_COLOR} name="Accenture" />
               </ComposedChart>
             </ResponsiveContainer>
           )}
@@ -124,7 +123,7 @@ export function AddressableMarket({ filter }: { filter?: CommonFilterParams }) {
 
         {/* Growth over FY */}
         <Panel
-          title="Addressable Growth · annualised, by FY"
+          title="Consulting Market Growth · annualised, by FY"
           action={
             <Select
               size="small" value={offering} displayEmpty
@@ -158,9 +157,8 @@ export function AddressableMarket({ filter }: { filter?: CommonFilterParams }) {
                     formatter={(v: number, n: string) =>
                       n === "yoy_pct" ? [`${v}%`, "YoY"] : [formatAud(v), n === "accenture_value" ? "Accenture" : "Addressable"]}
                     contentStyle={tooltipStyle} />
-                  <Bar yAxisId="v" dataKey="value" fill={ADDRESSABLE} fillOpacity={0.85} name="Addressable" />
-                  <Bar yAxisId="v" dataKey="accenture_value" fill={ACCENTURE_COLOR} name="Accenture" />
-                  <Line yAxisId="y" type="monotone" dataKey="yoy_pct" stroke={SLATE} strokeWidth={1.5} dot={false} name="YoY" />
+                  <Bar yAxisId="v" dataKey="value" fill={ADDRESSABLE} fillOpacity={0.85} name="Market" />
+                  <Line yAxisId="y" type="monotone" dataKey="yoy_pct" stroke={SLATE} strokeWidth={1.5} dot={false} name="YoY %" />
                 </ComposedChart>
               </ResponsiveContainer>
             </>

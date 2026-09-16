@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Box, Divider, FormControl, MenuItem, Select, Typography } from "@mui/material";
 import { getFilters } from "../api/contracts";
+import { AccenturePosition } from "../components/AccenturePosition";
 import { AddressableMarket } from "../components/AddressableMarket";
 import { CompetitivePosition } from "../components/CompetitivePosition";
 import { RelationshipNetwork } from "../components/RelationshipNetwork";
@@ -42,10 +43,15 @@ export function DashboardPage() {
         </FormControl>
       </Box>
 
-      {/* Accenture's current positioning (addressable market) */}
+      {/* Section 1 — Defence Expenditure on Consulting (market-level, no Accenture numbers) */}
       <AddressableMarket filter={filter} />
 
-      {/* Accenture vs peer cohorts (Big 4, MBB, challengers) */}
+      {/* Section 2 — Accenture's Position */}
+      <Divider sx={{ mt: 5, mb: 1 }} />
+      <AccenturePosition filter={filter} />
+
+      {/* Section 3 — Competitive landscape: Accenture vs peer cohorts */}
+      <Divider sx={{ mt: 5, mb: 1 }} />
       <CompetitivePosition filter={filter} />
 
       {/* Supplier <-> Defence agency relationship network */}
