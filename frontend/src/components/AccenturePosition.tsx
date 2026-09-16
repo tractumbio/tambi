@@ -11,7 +11,7 @@ import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { getAddressableSummary, getExpiring, getGrowth, getNetworkContracts } from "../api/metrics";
 import { commissionResearch } from "../api/research";
 import { useApi } from "../api/useApi";
-import { formatAud, formatDate, formatPct } from "../lib/format";
+import { formatAud, formatDate } from "../lib/format";
 import { ACCENTURE_COLOR } from "../theme/competitorColors";
 import { CARD_SX, INK_MUTED, LABEL_SX, tooltipStyle } from "../theme/dashboardStyles";
 import type { CommonFilterParams, FyWindow } from "../types";
@@ -112,17 +112,11 @@ export function AccenturePosition({ filter }: { filter?: CommonFilterParams }) {
       </Box>
 
       {/* KPI row */}
-      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, mb: 3 }}>
+      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, mb: 3 }}>
         <KpiCard
           label="Total Contract Value"
           value={formatAud(s?.accenture_value)}
           sub="Accenture Defence contracts"
-          loading={summary.loading}
-        />
-        <KpiCard
-          label="Market Share"
-          value={s ? formatPct(s.accenture_share_of_addressable) : "—"}
-          sub="Of addressable consulting market"
           loading={summary.loading}
         />
         <KpiCard
