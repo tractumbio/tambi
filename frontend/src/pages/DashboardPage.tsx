@@ -3,6 +3,7 @@ import { Box, FormControl, MenuItem, Select, Typography } from "@mui/material";
 import { getFilters } from "../api/contracts";
 import { AddressableMarket } from "../components/AddressableMarket";
 import { CompetitivePosition } from "../components/CompetitivePosition";
+import { MarketFunnel } from "../components/MarketFunnel";
 import { RelationshipNetwork } from "../components/RelationshipNetwork";
 import { useApi } from "../api/useApi";
 import { ACCENTURE_COLOR } from "../theme/competitorColors";
@@ -40,6 +41,9 @@ export function DashboardPage() {
           </Select>
         </FormControl>
       </Box>
+
+      {/* Market funnel: total Defence -> addressable TAM -> Accenture wins */}
+      <MarketFunnel filter={filter} />
 
       {/* Accenture's current positioning (addressable market) */}
       <AddressableMarket filter={filter} />
