@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/monthly-reports", tags=["monthly-reports"])
 
-_MODELS = {"claude-haiku-4-5-20251001", "claude-sonnet-5", "claude-opus-5"}
+_MODELS = {"claude-sonnet-5-5"}
 _EFFORTS = {"low", "standard", "deep"}
 
 
@@ -158,7 +158,7 @@ def remove_domain(domain: str, session: Session = Depends(get_db)) -> dict:
 
 @router.post("/harvest")
 def trigger_harvest(session: Session = Depends(get_db), effort: str = Query("standard"),
-                    model: str = Query("claude-haiku-4-5-20251001")) -> dict:
+                    model: str = Query("claude-sonnet-5-5")) -> dict:
     """Run a news harvest now (accumulate the knowledge base from the allowlist)."""
     from app.intelligence.harvest_news import run_harvest
 
@@ -207,7 +207,7 @@ def generate(req: GenerateReportRequest, session: Session = Depends(get_db)) -> 
     if end <= start:
         raise HTTPException(status_code=400, detail="period_end must be after period_start")
 
-    model = req.model if req.model in _MODELS else "claude-sonnet-5"
+    model = req.model if req.model in _MODELS else "claude-sonnet-5-5"
     effort = req.effort if req.effort in _EFFORTS else "standard"
 
     try:

@@ -101,7 +101,7 @@ def _strip_fences(s: str) -> str:
 
 def generate_sql(question: str) -> str:
     msg = _client().messages.create(
-        model="claude-haiku-4-5-20251001",
+        model="claude-sonnet-5-5",
         max_tokens=1500,
         messages=[{"role": "user", "content": f"""{_SCHEMA_DOC}
 
@@ -174,7 +174,7 @@ def narrate(question: str, columns: list[str], rows: list[dict]) -> tuple[str, l
     """Turn result rows into a plain-English answer + a list of source CN ids."""
     preview = _jsonable(rows[:40])
     msg = _client().messages.create(
-        model="claude-haiku-4-5-20251001",
+        model="claude-sonnet-5-5",
         max_tokens=700,
         messages=[{"role": "user", "content": f"""A user asked: "{question}"
 

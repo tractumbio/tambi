@@ -49,7 +49,7 @@ def _text(msg) -> str:
 def plan_questions(title: str, brief: str) -> list[str]:
     """Decompose a brief into up to _MAX_QUESTIONS concrete, data-answerable questions."""
     msg = _client().messages.create(
-        model="claude-haiku-4-5-20251001",
+        model="claude-sonnet-5-5",
         max_tokens=400,
         messages=[{"role": "user", "content": f"""You are planning a market-intelligence \
 investigation of the Australian Defence contract market. The data available is a warehouse \
@@ -84,7 +84,7 @@ def synthesise(title: str, brief: str, findings: list[ResearchFinding]) -> tuple
         f"Q: {f.question}\nFinding: {f.finding}" for f in findings
     )
     msg = _client().messages.create(
-        model="claude-haiku-4-5-20251001",
+        model="claude-sonnet-5-5",
         max_tokens=900,
         messages=[{"role": "user", "content": f"""You are writing a Defence market-intelligence \
 report for Accenture ANZ.

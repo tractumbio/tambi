@@ -103,7 +103,7 @@ def visualize(req: VisualizeRequest) -> VisualizeResponse:
 
     try:
         resp = _client().messages.create(
-            model="claude-haiku-4-5-20251001",
+            model="claude-sonnet-5-5",
             max_tokens=700,
             system=_SYSTEM,
             messages=[{"role": "user", "content": user_msg}],

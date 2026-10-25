@@ -102,7 +102,7 @@ Use these slugs for known competitors: accenture, deloitte, ey, kpmg, pwc, mckin
 jacobs, kbr, babcock, bae-systems, boeing-defence, lockheed-martin, thales, dxc, ibm, leidos, nova-systems."""
 
     msg = client.messages.create(
-        model="claude-haiku-4-5-20251001",
+        model="claude-sonnet-5-5",
         max_tokens=800,
         messages=[{"role": "user", "content": prompt}],
     )
