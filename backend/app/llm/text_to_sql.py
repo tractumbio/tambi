@@ -101,7 +101,7 @@ def _strip_fences(s: str) -> str:
 
 def generate_sql(question: str) -> str:
     msg = _client().messages.create(
-        model="claude-sonnet-5-5",
+        model="claude-sonnet-5",
         max_tokens=1500,
         messages=[{"role": "user", "content": f"""{_SCHEMA_DOC}
 
@@ -115,7 +115,8 @@ Question: {question}"""}],
     # A truncated response would yield invalid SQL — reject rather than run a partial query.
     if msg.stop_reason == "max_tokens":
         raise SqlGuardError("The query was too complex to generate reliably.")
-    return _strip_fences(msg.content[0].text)
+    from app.llm.claude_client import extract_text
+    return _strip_fences(extract_text(msg))
 
 
 def guard_sql(sql: str) -> str:
@@ -174,7 +175,7 @@ def narrate(question: str, columns: list[str], rows: list[dict]) -> tuple[str, l
     """Turn result rows into a plain-English answer + a list of source CN ids."""
     preview = _jsonable(rows[:40])
     msg = _client().messages.create(
-        model="claude-sonnet-5-5",
+        model="claude-sonnet-5",
         max_tokens=700,
         messages=[{"role": "user", "content": f"""A user asked: "{question}"
 
@@ -189,7 +190,8 @@ Then output a JSON object on the FINAL line only, no fences:
 {{"answer": "<your answer text>", "sources": ["<cn_id>", ...]}}
 where sources are up to 8 cn_id values from the rows (empty list if none)."""}],
     )
-    raw = msg.content[0].text.strip()
+    from app.llm.claude_client import extract_text
+    raw = extract_text(msg).strip()
     # The model may emit prose then JSON; take the last JSON object.
     match = re.search(r"\{.*\}\s*$", raw, re.DOTALL)
     if match:

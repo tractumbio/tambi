@@ -9,6 +9,14 @@ import anthropic
 from app.core.config import get_settings
 
 
+def extract_text(msg: anthropic.types.Message) -> str:
+    """Return the text from the first text block, skipping thinking blocks."""
+    for block in msg.content:
+        if block.type == "text":
+            return block.text
+    return ""
+
+
 def get_anthropic_client() -> anthropic.Anthropic:
     """Return an Anthropic client pointed at the right backend.
 
@@ -102,12 +110,12 @@ Use these slugs for known competitors: accenture, deloitte, ey, kpmg, pwc, mckin
 jacobs, kbr, babcock, bae-systems, boeing-defence, lockheed-martin, thales, dxc, ibm, leidos, nova-systems."""
 
     msg = client.messages.create(
-        model="claude-sonnet-5-5",
+        model="claude-sonnet-5",
         max_tokens=800,
         messages=[{"role": "user", "content": prompt}],
     )
 
-    raw = msg.content[0].text.strip()
+    raw = extract_text(msg).strip()
     # Strip any accidental markdown fences
     if raw.startswith("```"):
         raw = raw.split("```")[1]

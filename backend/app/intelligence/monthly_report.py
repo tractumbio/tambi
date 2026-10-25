@@ -30,7 +30,7 @@ from app.intelligence.facts import build_facts
 from app.intelligence.news import knowledge_delta, news_for_window
 from app.models import MonthlyReport
 
-_MODELS = {"claude-sonnet-5-5"}
+_MODELS = {"claude-sonnet-5"}
 _EFFORT_TOKENS = {"low": 1600, "standard": 2600, "deep": 3600}
 
 DEFAULT_STRUCTURE = """\
@@ -136,7 +136,8 @@ Respond with ONLY a JSON object (no fences):
         model=model, max_tokens=max_tokens,
         messages=[{"role": "user", "content": prompt}],
     )
-    raw = msg.content[0].text.strip()
+    from app.llm.claude_client import extract_text
+    raw = extract_text(msg).strip()
     # Strip markdown fences the model sometimes wraps JSON in.
     if raw.startswith("```"):
         raw = raw.split("```", 2)[1] if "```" in raw[3:] else raw[3:]
@@ -154,10 +155,10 @@ Respond with ONLY a JSON object (no fences):
 
 
 def generate_report(session: Session, period_start: date, period_end: date, *,
-                    model: str = "claude-sonnet-5-5", effort: str = "standard",
+                    model: str = "claude-sonnet-5", effort: str = "standard",
                     structure: str | None = None) -> MonthlyReport:
     if model not in _MODELS:
-        model = "claude-sonnet-5-5"
+        model = "claude-sonnet-5"
     structure = (structure or DEFAULT_STRUCTURE).strip()
 
     # Anchor "what changed since last report" on the most recent prior report's time.
@@ -222,7 +223,7 @@ def main() -> None:
     parser.add_argument("--month", help="YYYY-MM (whole calendar month)")
     parser.add_argument("--from", dest="from_", help="YYYY-MM-DD window start (inclusive)")
     parser.add_argument("--to", help="YYYY-MM-DD window end (exclusive)")
-    parser.add_argument("--model", default="claude-sonnet-5-5", choices=sorted(_MODELS))
+    parser.add_argument("--model", default="claude-sonnet-5", choices=sorted(_MODELS))
     parser.add_argument("--effort", default="standard", choices=list(_EFFORT_TOKENS))
     args = parser.parse_args()
 

@@ -103,12 +103,13 @@ def visualize(req: VisualizeRequest) -> VisualizeResponse:
 
     try:
         resp = _client().messages.create(
-            model="claude-sonnet-5-5",
+            model="claude-sonnet-5",
             max_tokens=700,
             system=_SYSTEM,
             messages=[{"role": "user", "content": user_msg}],
         )
-        raw = resp.content[0].text.strip()
+        from app.llm.claude_client import extract_text
+        raw = extract_text(resp).strip()
         if raw.startswith("```"):
             raw = raw.split("```")[1]
             if raw.startswith("json"):

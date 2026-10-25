@@ -43,13 +43,14 @@ def _client():
 
 
 def _text(msg) -> str:
-    return msg.content[0].text.strip()
+    from app.llm.claude_client import extract_text
+    return extract_text(msg).strip()
 
 
 def plan_questions(title: str, brief: str) -> list[str]:
     """Decompose a brief into up to _MAX_QUESTIONS concrete, data-answerable questions."""
     msg = _client().messages.create(
-        model="claude-sonnet-5-5",
+        model="claude-sonnet-5",
         max_tokens=400,
         messages=[{"role": "user", "content": f"""You are planning a market-intelligence \
 investigation of the Australian Defence contract market. The data available is a warehouse \
@@ -84,7 +85,7 @@ def synthesise(title: str, brief: str, findings: list[ResearchFinding]) -> tuple
         f"Q: {f.question}\nFinding: {f.finding}" for f in findings
     )
     msg = _client().messages.create(
-        model="claude-sonnet-5-5",
+        model="claude-sonnet-5",
         max_tokens=900,
         messages=[{"role": "user", "content": f"""You are writing a Defence market-intelligence \
 report for Accenture ANZ.
