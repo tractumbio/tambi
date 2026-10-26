@@ -26,7 +26,7 @@ from app.db.session import get_session_factory
 from app.models import CompetitorGroup, IngestState, KnowledgeItem
 
 _JOB = "news_harvest"
-_DEFAULT_MODEL = "claude-sonnet-5-5"
+_DEFAULT_MODEL = "claude-sonnet-5"
 
 # effort -> (web-search max_uses, target item count)
 _EFFORT = {"low": (5, 8), "standard": (9, 15), "deep": (14, 25)}

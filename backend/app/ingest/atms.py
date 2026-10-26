@@ -43,6 +43,26 @@ logger = logging.getLogger("app.ingest.atms")
 RSS_PATH = "/public_data/rss/rss.xml"
 DETAIL_PATH = "/Atm/Show/{uuid}"
 _ACT = ZoneInfo("Australia/Sydney")
+_DEFENCE_AGENCIES = {
+    "department of defence",
+    "defence",
+    "royal australian navy",
+    "australian army",
+    "royal australian air force",
+    "australian defence force",
+    "adf",
+    "defence housing australia",
+    "defence science and technology group",
+    "dst group",
+    "australian signals directorate",
+    "asd",
+    "australian strategic policy institute",
+    "aspi",
+    "joint capabilities group",
+    "navy",
+    "army",
+    "air force",
+}
 _DEFENCE_KEYWORDS = ("defence", "military", "adf", "navy", "army", "air force", "aukus")
 
 
@@ -131,7 +151,10 @@ def _parse_date(text: str | None) -> date | None:
 
 
 def _is_defence(agency: str | None, title: str | None, desc: str | None) -> bool:
-    hay = f"{agency or ''} {title or ''} {desc or ''}".lower()
+    agency_lower = (agency or "").lower()
+    if any(a in agency_lower for a in _DEFENCE_AGENCIES):
+        return True
+    hay = f"{title or ''} {desc or ''}".lower()
     return any(k in hay for k in _DEFENCE_KEYWORDS)
 
 
@@ -145,7 +168,7 @@ class AtmClient:
         ua = settings.news_fetch_user_agent or (
             "Mozilla/5.0 (compatible; tambi-defence-intel/1.0; +research)"
         )
-        self._delay = max(settings.news_min_request_interval_ms, 2000) / 1000
+        self._delay = max(settings.news_min_request_interval_ms, 500) / 1000
         self._client = httpx.Client(base_url=self._base, timeout=30.0,
                                     headers={"User-Agent": ua}, follow_redirects=True)
 
@@ -263,6 +286,7 @@ def _update_state(session: Session, stats: AtmStats, status: str, error: str | N
 
 
 def run() -> AtmStats:
+    from datetime import timedelta
     session = get_session_factory()()
     client = AtmClient()
     loader = AtmLoader(session)
@@ -270,8 +294,25 @@ def run() -> AtmStats:
         items = client.fetch_rss()
         loader.stats.fetched = len(items)
         logger.info("atm rss fetched", extra={"count": len(items)})
+
+        # Build a map of recently-seen ATMs (by uuid) so we can skip re-fetching detail pages.
+        cutoff = datetime.now(UTC) - timedelta(hours=12)
+        recent = {
+            row.atm_uuid: row.atm_id
+            for row in session.execute(
+                select(Atm).where(Atm.last_seen_at >= cutoff)
+            ).scalars()
+            if row.atm_uuid
+        }
+
         seen: set[str] = set()
         for raw in items:
+            if raw.atm_uuid in recent:
+                # Already enriched recently -- skip detail fetch, just keep in seen set.
+                if recent[raw.atm_uuid]:
+                    seen.add(recent[raw.atm_uuid])
+                loader.stats.skipped += 1
+                continue
             try:
                 client.enrich(raw)
             except httpx.HTTPError as exc:
